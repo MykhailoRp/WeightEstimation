@@ -1,0 +1,48 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table users {
+  id uuid [primary key]
+  email string [not null]
+  email_verified bool [not null, default: false]
+  password_hash string [not null]
+  created_at timestamp [not null]
+}
+
+Table customers {
+  user_id uuid [primary key, ref: - users.id]
+  min_funds_allowed decimal [not null, default: 0.00]
+  max_api_tokens_allowed int [not null, default: 5]
+}
+
+Table admins {
+  user_id uuid [primary key, ref: - users.id]
+  promoted_by uuid [ref: > users.id, null]
+  created_at timestamp [not null]
+}
+
+Table api_keys {
+  token string [primary key]
+  user_id uuid [ref: > users.id, not null]
+  created_at timestamp [not null]
+}
+
+Table paymets {
+  id uuid [primary key]
+  user_id uuid [ref: > users.id, not null]
+  status enum [not null]
+  amount decimal [not null]
+}
+
+Table weight_estimations{
+  id uuid [primary key]
+  user_id uuid [ref: > users.id, not null]
+  video_url string [not null]
+  status enum [not null]
+  result enum [null]
+
+  processing_cost decimal
+
+  callback_hook string
+  callback_response int
+}
