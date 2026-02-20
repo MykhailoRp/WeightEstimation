@@ -1,5 +1,10 @@
-setup :
-	uv sync --group dev
+api : 
+	uv run uvicorn api.main:app --host localhost --port 8000 --reload
+
+install : 
+	uv sync --all-packages --group dev
+
+setup : install
 	uv run pre-commit install
 
 style :
