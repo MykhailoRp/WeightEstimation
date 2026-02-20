@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: run-pre-commit
+        name: Run pre-commit
+        entry: make pre-commit
+        language: system
+        pass_filenames: false
+        files: \.py$
