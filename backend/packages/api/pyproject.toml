@@ -10,7 +10,11 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.129.0",
     "uvicorn>=0.41.0",
+    "common",
 ]
+
+[tool.uv.sources]
+common = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.10.4,<0.11.0"]
