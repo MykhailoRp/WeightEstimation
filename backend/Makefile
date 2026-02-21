@@ -1,3 +1,6 @@
+dev : 
+	docker compose up --build
+
 api : 
 	uv run uvicorn api.main:app --host localhost --port 8000 --reload
 

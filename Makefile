@@ -7,3 +7,6 @@ install :
 
 setup : 
 	cd backend && make setup
+
+dev :
+	cd backend && make dev
