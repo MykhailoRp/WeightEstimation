@@ -7,7 +7,7 @@ from common.sql.tables.base import Base
 from common.types import UserId
 
 
-class User(Base):
+class UserTable(Base):
     __tablename__ = "users"
 
     id: Mapped[UserId] = mapped_column(primary_key=True)
