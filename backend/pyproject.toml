@@ -57,6 +57,7 @@ select = [
 ]
 
 ignore = [
+    "FBT003", # Boolean positional value in function call
     "E501",   # line too long (handled by formatter)
     "B008",   # FastAPI dependency injection false positives
 ]

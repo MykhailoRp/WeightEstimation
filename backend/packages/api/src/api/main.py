@@ -1,10 +1,7 @@
 from fastapi import FastAPI
 
-from api.model.basic import HealthCheck
+from api.routers import router
 
 app = FastAPI()
 
-
-@app.get("/health", status_code=200, include_in_schema=False)
-def health_check() -> HealthCheck:
-    return HealthCheck(status=200, text="Service api is healthy")
+app.include_router(router=router)
