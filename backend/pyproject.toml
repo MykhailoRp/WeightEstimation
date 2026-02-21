@@ -11,6 +11,7 @@ members = [
     "packages/common",
     "packages/api",
     "packages/worker",
+    "packages/db_setup",
 ]
 
 [dependency-groups]
@@ -49,6 +50,10 @@ select = [
     "C4",  # comprehensions
     "SIM", # simplifications
     "RUF", # Ruff-specific rules
+    "COM", # enforce trailing comma rules
+    "DTZ", # require strict timezone manipulation with datetime
+    "FBT", # detect boolean traps
+    "N",   # enforce naming conventions, e.g. ClassName vs function_name
 ]
 
 ignore = [

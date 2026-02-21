@@ -15,6 +15,15 @@ COPY packages/common packages/common
 RUN uv sync --package common
 
 
+FROM common AS db_setup
+
+COPY packages/db_setup packages/db_setup
+
+RUN uv sync --package db_setup
+
+WORKDIR /workspace/packages/db_setup
+
+
 FROM common AS api
 
 COPY packages/api packages/api
