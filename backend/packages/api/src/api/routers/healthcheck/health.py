@@ -1,4 +1,7 @@
-from fastapi import APIRouter
+import socket
+
+from fastapi import APIRouter, HTTPException
+from sqlalchemy.exc import OperationalError
 
 from api.dependencies import DatabaseSession
 from api.models.basic import HealthCheck
@@ -9,5 +12,9 @@ router = APIRouter()
 
 @router.get(path="/")
 async def health(session: DatabaseSession) -> HealthCheck:
-    assert ping_db(session=session)
+    try:
+        await ping_db(session=session)
+    except (socket.gaierror, OperationalError) as e:
+        raise HTTPException(status_code=503, detail="Service unavalible") from e
+
     return HealthCheck(status=200, text="Service api is healthy")
