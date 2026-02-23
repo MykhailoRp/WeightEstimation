@@ -1,0 +1,47 @@
+name: test-compose
+
+services:
+
+  test_db:
+    container_name: test-postgres
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PW:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  api_tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api_tests
+    container_name: api_tests
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST:-test_db}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PW:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_DRIVER=${POSTGRES_SETUP_DRIVER:-psycopg}
+    command: ["uv", "run", "pytest", "-vv"]
+    depends_on:
+      test_db:
+        condition: service_healthy
+
+  result:
+    image: alpine
+    depends_on:
+      api_tests:
+        condition: service_completed_successfully
+    command: ["exit", "0"]
+
+  

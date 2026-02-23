@@ -12,6 +12,8 @@ members = [
     "packages/api",
     "packages/worker",
     "packages/db_setup",
+    "tests/testlib",
+    "tests/api_tests",
 ]
 
 [dependency-groups]

@@ -3,7 +3,7 @@ FROM ghcr.io/astral-sh/uv:python3.12-trixie-slim AS base
 ENV UV_NO_DEV=1
 WORKDIR /workspace
 
-COPY Makefile pyproject.toml .python-version .
+COPY Makefile pyproject.toml .python-version ./
 
 RUN uv sync
 
@@ -29,6 +29,14 @@ FROM common AS api
 COPY packages/api packages/api
 
 RUN uv sync --package api
+
+
+FROM api AS api_tests
+
+COPY tests/testlib tests/testlib
+COPY tests/api_tests tests/api_tests
+
+RUN uv sync --package api_tests
 
 
 FROM common AS worker

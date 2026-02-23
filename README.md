@@ -27,3 +27,7 @@ Run local dev host with local files mounted as volumes in docker compose:
 Run tests in separate unmounted docker containers:
 
     make test
+
+To run tests locally use
+
+    uv run pytest

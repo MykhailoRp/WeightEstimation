@@ -15,6 +15,6 @@ async def health(session: DatabaseSession) -> HealthCheck:
     try:
         await ping_db(session=session)
     except (socket.gaierror, OperationalError) as e:
-        raise HTTPException(status_code=503, detail="Service unavalible") from e
+        raise HTTPException(status_code=503, detail="Service is unavalible") from e
 
-    return HealthCheck(status=200, text="Service api is healthy")
+    return HealthCheck(status=200, text="Service is healthy")

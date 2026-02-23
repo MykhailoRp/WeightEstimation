@@ -11,6 +11,12 @@ services:
       - "5432:5432"
     volumes:
       - postgres-data:/docker-entrypoint-initdb.d/
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     restart: unless-stopped
 
   db_setup:
@@ -32,7 +38,9 @@ services:
       - ./packages/common:/workspace/packages/common
       - ./packages/db_setup:/workspace/packages/db_setup
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+        restart: true
 
   api:
     build:
