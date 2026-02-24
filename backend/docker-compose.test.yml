@@ -26,6 +26,7 @@ services:
       target: api_tests
     container_name: api_tests
     environment:
+      - SERVICE_NAME=api_tests
       - POSTGRES_HOST=test_db
       - POSTGRES_PORT=5432
       - POSTGRES_USER=postgres
