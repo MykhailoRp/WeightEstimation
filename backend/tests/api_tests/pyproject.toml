@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "api",
+    "httpx>=0.28.1",
     "testlib",
 ]
 
@@ -19,3 +20,7 @@ build-backend = "uv_build"
 [tool.uv.sources]
 testlib = { workspace = true }
 api = { workspace = true }
+
+[project.entry-points.pytest11]
+testlib = "testlib"
+api_tests = "api_tests"

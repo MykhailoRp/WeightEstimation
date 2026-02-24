@@ -35,8 +35,11 @@ FROM api AS api_tests
 
 COPY tests/testlib tests/testlib
 COPY tests/api_tests tests/api_tests
+COPY packages/db_setup packages/db_setup
 
 RUN uv sync --package api_tests
+
+WORKDIR /workspace/tests/api_tests/cases
 
 
 FROM common AS worker

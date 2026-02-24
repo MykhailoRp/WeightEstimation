@@ -6,17 +6,17 @@ services:
     container_name: test-postgres
     image: postgres:latest
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PW:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
     ports:
       - "5432:5432"
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
-      interval: 30s
-      timeout: 5s
+      interval: 5s
+      timeout: 1s
       retries: 5
-      start_period: 10s
+      start_period: 2s
     restart: unless-stopped
 
   api_tests:
@@ -26,19 +26,20 @@ services:
       target: api_tests
     container_name: api_tests
     environment:
-      - POSTGRES_HOST=${POSTGRES_HOST:-test_db}
-      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      - POSTGRES_PASSWORD=${POSTGRES_PW:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-postgres}
-      - POSTGRES_DRIVER=${POSTGRES_SETUP_DRIVER:-psycopg}
+      - POSTGRES_HOST=test_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=api_test
+      - POSTGRES_DRIVER=psycopg
     command: ["uv", "run", "pytest", "-vv"]
     depends_on:
       test_db:
         condition: service_healthy
 
-  result:
+  test_result:
     image: alpine
+    container_name: test_result
     depends_on:
       api_tests:
         condition: service_completed_successfully

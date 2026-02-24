@@ -65,7 +65,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["api", "common", "worker"]
+known-first-party = ["api", "common", "worker", "db_setup", "testlib", "api_tests"]
 
 [tool.ruff.format]
 quote-style = "double"

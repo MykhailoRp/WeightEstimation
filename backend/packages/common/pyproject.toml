@@ -13,6 +13,8 @@ dependencies = [
     "pydantic>=2.12.5",
     "pydantic-settings>=2.13.0",
     "sqlalchemy>=2.0.46",
+    "sqlalchemy-utils>=0.42.1",
+    "types-sqlalchemy-utils>=1.1.0",
 ]
 
 [build-system]

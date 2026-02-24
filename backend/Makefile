@@ -1,8 +1,11 @@
+# TODO: add test logging
 test :
-	docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from result
+	docker compose -f docker-compose.test.yml down -v --remove-orphans
+	docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from test_result --remove-orphans
+	docker compose -f docker-compose.test.yml down -v --remove-orphans
 
 dev : 
-	docker compose up --build
+	docker compose up --build --remove-orphans
 
 api : 
 	uv run uvicorn api.main:app --host localhost --port 8000 --reload
