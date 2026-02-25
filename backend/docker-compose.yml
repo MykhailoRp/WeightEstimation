@@ -27,6 +27,7 @@ services:
       target: db_setup
     user: "${UID}:${GID}"  # run with current user to preserve version file permissions
     environment:
+      - SERVICE_NAME=db_setup
       - POSTGRES_HOST=${POSTGRES_HOST:-db}
       - POSTGRES_PORT=${POSTGRES_PORT:-5432}
       - POSTGRES_USER=${POSTGRES_USER:-postgres}

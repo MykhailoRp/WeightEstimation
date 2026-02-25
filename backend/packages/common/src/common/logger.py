@@ -1,8 +1,44 @@
-import os
-from pathlib import Path
+import logging
+import sys
+from types import FrameType
 
 from loguru import logger
 
-LOG_PATH = Path(__file__).parents[4] / "logs" / f"{os.getenv('SERVICE_NAME', 'common')}.log"
+from common.service_config import ServiceConfig
 
-logger.add(LOG_PATH, rotation="500 MB", serialize=True)
+
+class InterceptHandler(logging.Handler):
+    def emit(self, record: logging.LogRecord) -> None:
+        level: str | int
+        try:
+            level = logger.level(record.levelname).name
+        except ValueError:
+            level = record.levelno
+
+        frame: FrameType | None
+        frame, depth = logging.currentframe(), 2
+        while frame and frame.f_code.co_filename == logging.__file__:
+            frame = frame.f_back
+            depth += 1
+
+        logger.opt(depth=depth, exception=record.exc_info).log(
+            level,
+            record.getMessage(),
+        )
+
+
+def setup_logging() -> None:
+
+    logger.remove()
+    logger.add(sys.stdout, serialize=ServiceConfig.json_log)
+    logger.configure(extra={"service": ServiceConfig.name})
+
+    logging.root.handlers = [InterceptHandler()]
+    logging.root.setLevel(logging.NOTSET)
+
+    for name in logging.root.manager.loggerDict:
+        logging.getLogger(name).handlers = []
+        logging.getLogger(name).propagate = True
+
+
+setup_logging()
