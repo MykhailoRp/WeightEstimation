@@ -43,12 +43,12 @@ services:
         condition: service_healthy
         restart: true
 
-  api:
+  app:
     build:
       context: .
       dockerfile: Dockerfile
       target: api
-    container_name: api
+    container_name: app
     environment:
       - SERVICE_NAME=api
       - POSTGRES_HOST=${POSTGRES_HOST:-db}
@@ -72,6 +72,8 @@ services:
       - ./packages/api:/workspace/packages/api
       - ./logs:/workspace/logs
     depends_on:
+      db:
+        condition: service_healthy
       db_setup:
         condition: service_completed_successfully
 

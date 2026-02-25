@@ -10,7 +10,7 @@ from common.sql.scripts.ping import ping_db
 router = APIRouter()
 
 
-@router.get(path="/")
+@router.get(path="/health")
 async def health(session: DatabaseSession) -> HealthCheck:
     try:
         await ping_db(session=session)
