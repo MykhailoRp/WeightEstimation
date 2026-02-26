@@ -24,12 +24,11 @@ jobs:
       - 
         name: Log in to registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      # - 
-      #   name: Set lowercase owner
-      #   id: owner
-      #   run: echo "owner_lc=${OWNER,,}" >> $GITHUB_OUTPUT
-      #   env:
-      #     OWNER: ${{ github.actor }}
+
+      - name: Set lower case owner name
+        run: echo "OWNER_LC=${OWNER,,}" >>${GITHUB_ENV}
+        env:
+          OWNER: '${{ github.repository_owner }}'
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -49,8 +48,8 @@ jobs:
           target: api
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
-            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:latest
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.sha_short }}
       
       
       
