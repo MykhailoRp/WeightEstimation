@@ -29,7 +29,7 @@ jobs:
         id: owner
         run: echo "owner_lc=${OWNER,,}" >> $GITHUB_OUTPUT
         env:
-          OWNER: ${{ github.repository_owner }}
+          OWNER: ${{ github.actor }}
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v3
