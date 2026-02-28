@@ -2,11 +2,10 @@ name: Apply KinD
 
 on:
   push:
-  pull_request:
 env:
   IMAGE_NAME: ecommerce-app
 jobs:
-  docker:
+  kind:
     runs-on: ubuntu-latest
 
     steps:
