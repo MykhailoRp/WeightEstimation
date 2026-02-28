@@ -1,0 +1,32 @@
+name: Push Image
+
+on:
+  push:
+    tags:
+      - lab-3
+  pull_request:
+env:
+  IMAGE_NAME: ecommerce-app
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - 
+        name: Checkout repository
+        uses: actions/checkout@v4
+      - 
+        name: Setup KinD
+        uses: engineerd/setup-kind@v0.6.0
+      - 
+        name: Apply deployment
+        run: kubectl apply -f "k8s/*.yaml"
+      - 
+        name: Run Master Validation Script
+        run: |
+          chmod +x ./tests/lab3_test.sh
+          ./tests/lab3_test.sh

@@ -2,10 +2,8 @@ name: Push Image
 
 on:
   push:
-    branches:
-      - main
     tags:
-      - v*
+      - lab-2
   pull_request:
 env:
   IMAGE_NAME: ecommerce-app
