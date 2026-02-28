@@ -1,19 +1,13 @@
-name: Push Image
+name: Apply KinD
 
 on:
   push:
-    tags:
-      - lab-3
   pull_request:
 env:
   IMAGE_NAME: ecommerce-app
 jobs:
   docker:
     runs-on: ubuntu-latest
-
-    permissions:
-      contents: read
-      packages: write
 
     steps:
       - 
