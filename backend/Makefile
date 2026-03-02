@@ -1,8 +1,8 @@
 # TODO: add test logging
 test :
-	docker compose -f docker-compose.test.yml down -v --remove-orphans
-	docker compose -f docker-compose.test.yml up --build --abort-on-container-exit --exit-code-from test_result --remove-orphans
-	docker compose -f docker-compose.test.yml down -v --remove-orphans
+	docker compose -f docker-compose.test.yaml down -v --remove-orphans
+	docker compose -f docker-compose.test.yaml up --build --abort-on-container-exit --exit-code-from test_result --remove-orphans
+	docker compose -f docker-compose.test.yaml down -v --remove-orphans
 
 dev : 
 	docker compose up --build --remove-orphans
