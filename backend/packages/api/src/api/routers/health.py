@@ -3,7 +3,7 @@ import socket
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.exc import OperationalError
 
-from api.dependencies import DatabaseSession
+from api.dependencies import SessionMaker
 from api.models.basic import HealthCheck
 from common.sql.scripts.ping import ping_db
 
@@ -11,9 +11,10 @@ router = APIRouter()
 
 
 @router.get(path="/health")
-async def health(session: DatabaseSession) -> HealthCheck:
+async def health(session_maker: SessionMaker) -> HealthCheck:
     try:
-        await ping_db(session=session)
+        async with session_maker() as session:
+            await ping_db(session=session)
     except (socket.gaierror, OperationalError) as e:
         raise HTTPException(status_code=503, detail="Service is unavalible") from e
 

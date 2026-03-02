@@ -2,20 +2,18 @@ from collections.abc import AsyncGenerator
 from typing import Annotated
 
 from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from common.sql import DatabaseConfig
 
 DATABASE_CONFIG = DatabaseConfig()
 
 
-async def get_db_engine() -> AsyncEngine:
-    return create_async_engine(DATABASE_CONFIG.url)
+engine = create_async_engine(DATABASE_CONFIG.url)
 
 
-async def get_db_session(engine: Annotated[AsyncEngine, Depends(get_db_engine)]) -> AsyncGenerator[AsyncSession, None]:
-    async with AsyncSession(engine) as session:
-        yield session
+async def get_db_session() -> AsyncGenerator[async_sessionmaker[AsyncSession], None]:
+    yield async_sessionmaker(engine, expire_on_commit=False)
 
 
-DatabaseSession = Annotated[AsyncSession, Depends(get_db_session)]
+SessionMaker = Annotated[async_sessionmaker[AsyncSession], Depends(get_db_session)]
