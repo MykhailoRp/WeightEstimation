@@ -10,7 +10,8 @@ class WeightClassStatus(StrEnum):
     PENDING = "pending"
     FRAMES_SPLIT = "frames_split"
     MASKS_EXTRACTED = "masks_extracted"
-    COMPLETE = "complete"
+    FEATURES_EXTRACTED = "features_extracted"
+    COMPLETED = "completed"
 
 
 class WeightClassResult(StrEnum):

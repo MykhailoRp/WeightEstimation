@@ -63,6 +63,7 @@ ignore = [
     "E501",   # line too long (handled by formatter)
     "B008",   # FastAPI dependency injection false positives
 ]
+unfixable = ["F401"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["api", "common", "worker", "db_setup", "testlib", "api_tests"]
