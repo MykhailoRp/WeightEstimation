@@ -11,6 +11,6 @@ from common.kafka.topics import weight_classification_created
     name="WeightClassification.SplitFrames",
 )
 async def split_frames(stream: StreamT[WeightClassificationCreated]) -> None:
-    """Dowloads uploaded video from S3 and runs trought tire identification and Kalman filter, producing tire bbxs"""
+    """Dowloads video from S3 and runs trought tire identification and Kalman filter, producing tire bbxs"""
     async for message in stream:
         logger.info(message.dumps())
