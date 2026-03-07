@@ -1,5 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from common.types import FileId
+
 
 class StorageCongfig(BaseSettings):
     access_key_id: str = "rustfsadmin"
@@ -11,3 +13,6 @@ class StorageCongfig(BaseSettings):
     bucket: str = "main"
 
     model_config = SettingsConfigDict(env_prefix="S3_")
+
+    def get_uploads_path(self, file_id: FileId, /) -> str:
+        return f"uploads/{file_id}"
