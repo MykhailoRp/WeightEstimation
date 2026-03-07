@@ -1,6 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from common.types import FileId
+from common.types import FileId, WeightClassId
 
 
 class StorageCongfig(BaseSettings):
@@ -14,5 +14,8 @@ class StorageCongfig(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix="S3_")
 
-    def get_uploads_path(self, file_id: FileId, /) -> str:
+    def get_uploads(self, file_id: FileId, /) -> str:
         return f"uploads/{file_id}"
+
+    def get_weight_class_video(self, weight_class_id: WeightClassId, /) -> str:
+        return f"weight_classification/{weight_class_id}/video"

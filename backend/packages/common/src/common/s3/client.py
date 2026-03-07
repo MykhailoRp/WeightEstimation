@@ -32,6 +32,10 @@ class S3Client:
     async def upload_file(self, b: BinaryIO, /) -> FileId:
         file_id = FileId(uuid.uuid4())
         async with self.client as client:
-            await client.upload_fileobj(b, self.config.bucket, self.config.get_uploads_path(file_id))
+            await client.upload_fileobj(b, self.config.bucket, self.config.get_uploads(file_id))
 
         return file_id
+
+    async def move_from_uploads(self, file_id: FileId, to: str) -> None:
+        async with self.client as client:
+            await client.copy_object(Bucket=self.config.bucket, CopySource=self.config.get_uploads(file_id), Key=to)
