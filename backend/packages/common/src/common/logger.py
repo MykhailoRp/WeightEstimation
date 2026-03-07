@@ -34,7 +34,7 @@ def setup_logging() -> None:
     logger.configure(extra={"service": ServiceConfig.name})
 
     logging.root.handlers = [InterceptHandler()]
-    logging.root.setLevel(logging.NOTSET)
+    logging.root.setLevel(logging.INFO)
 
     for name in logging.root.manager.loggerDict:
         logging.getLogger(name).handlers = []

@@ -4,7 +4,8 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from common.s3 import S3Client, StorageCongfig
+from common.s3 import S3Client as _S3Client
+from common.s3 import StorageCongfig
 from common.sql import DatabaseConfig
 
 DATABASE_CONFIG = DatabaseConfig()
@@ -24,8 +25,8 @@ STORAGE_CONFIG = StorageCongfig()
 
 
 @lru_cache(maxsize=1)
-def get_s3_client() -> S3Client:
-    return S3Client(config=STORAGE_CONFIG)
+def get_s3_client() -> _S3Client:
+    return _S3Client(config=STORAGE_CONFIG)
 
 
-S3Clinet = Annotated[S3Client, Depends(get_s3_client)]
+S3Client = Annotated[_S3Client, Depends(get_s3_client)]

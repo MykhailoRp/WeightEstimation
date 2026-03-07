@@ -34,7 +34,7 @@ pre-commit : lint
 
 NAME ?=
 migrate : 
-	docker compose run --rm db_setup uv run alembic upgrade head
+	docker compose start db_setup
 
 migration : migrate
 	@test -n "$(NAME)" || { echo "NAME is required! Usage: make migration NAME=value"; exit 1; }

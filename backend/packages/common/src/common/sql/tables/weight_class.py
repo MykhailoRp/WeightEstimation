@@ -1,37 +1,36 @@
 from datetime import datetime
 from typing import Self
 
-from sqlalchemy import ForeignKey, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import TIMESTAMP, func
+from sqlalchemy.orm import Mapped, mapped_column
 
 from common.models.weight_class import WeightClassification, WeightClassResult, WeightClassStatus
-from common.sql.tables import Base, UserTable
-from common.types import UserId, WeightClassId
+from common.sql.tables import Base
+from common.types import WeightClassId
 
 
 class WeightClassificationTable(Base):
     __tablename__ = "weight_classifications"
 
     id: Mapped[WeightClassId] = mapped_column(primary_key=True)
-    user_id: Mapped[UserId] = mapped_column(ForeignKey(UserTable.id))
+    # user_id: Mapped[UserId] = mapped_column(ForeignKey(UserTable.id)) # TODO: enable after implementing users
     status: Mapped[WeightClassStatus]
     result: Mapped[WeightClassResult | None]
 
-    created_at: Mapped[datetime]
-    updated_at: Mapped[datetime] = mapped_column(server_onupdate=func.now())
-    finished_at: Mapped[datetime | None]
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(True))
+    updated_at: Mapped[datetime] = mapped_column(TIMESTAMP(True), server_onupdate=func.now())
+    finished_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(True))
 
     video_url: Mapped[str]
 
     processing_cost: Mapped[float | None]
 
     # relationships
-    created_by: Mapped[UserTable] = relationship(back_populates="weight_classifications")
+    # created_by: Mapped[UserTable] = relationship(back_populates="weight_classifications")
 
     def m(self) -> WeightClassification:
         return WeightClassification(
             id=self.id,
-            user_id=self.user_id,
             status=self.status,
             result=self.result,
             created_at=self.created_at,
@@ -45,7 +44,6 @@ class WeightClassificationTable(Base):
     def new(cls, model: WeightClassification, /) -> Self:
         return cls(
             id=model.id,
-            user_id=model.user_id,
             status=model.status,
             result=model.result,
             created_at=model.created_at,

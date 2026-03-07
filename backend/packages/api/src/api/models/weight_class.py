@@ -18,7 +18,7 @@ class NewWeightClassification(BaseModel):
 
         return WeightClassification(
             id=id_,
-            user_id=user_id,
+            # user_id=user_id,
             status=WeightClassStatus.PENDING,
             result=None,
             created_at=now,

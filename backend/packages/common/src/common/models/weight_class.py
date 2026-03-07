@@ -3,7 +3,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel
 
-from common.types import UserId, WeightClassId
+from common.types import WeightClassId
 
 
 class WeightClassStatus(StrEnum):
@@ -21,7 +21,7 @@ class WeightClassResult(StrEnum):
 
 class WeightClassification(BaseModel):
     id: WeightClassId
-    user_id: UserId
+    # user_id: UserId  # TODO: enable after implementing users
     status: WeightClassStatus
     result: WeightClassResult | None
 

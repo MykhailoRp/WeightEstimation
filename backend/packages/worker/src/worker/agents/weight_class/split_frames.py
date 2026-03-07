@@ -3,11 +3,11 @@ from loguru import logger
 
 from common.kafka.faust import faust_app
 from common.kafka.messages.weight_class import WeightClassificationCreated
-from common.kafka.topics import weight_classification_created
+from common.kafka.topics import WeightClassificationCreatedTopic
 
 
 @faust_app.agent(
-    weight_classification_created,
+    WeightClassificationCreatedTopic,
     name="WeightClassification.SplitFrames",
 )
 async def split_frames(stream: StreamT[WeightClassificationCreated]) -> None:

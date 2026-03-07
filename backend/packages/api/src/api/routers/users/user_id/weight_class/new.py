@@ -4,6 +4,8 @@ from fastapi import APIRouter, Body, Path
 
 from api.dependencies import DBSession, S3Client
 from api.models.weight_class import NewWeightClassification
+from common.kafka.messages.weight_class import WeightClassificationCreated
+from common.kafka.topics import WeightClassificationCreatedTopic
 from common.models.weight_class import WeightClassification
 from common.sql.tables import WeightClassificationTable
 from common.types import UserId
@@ -26,8 +28,19 @@ async def create_weight_classification(
 
     await s3_client.move_from_uploads(file_id=request.file_id, to=result.video_url)
 
-    async with session_maker() as session:
-        session.add(WeightClassificationTable.new(result))
-        await session.commit()
+    try:
+        async with session_maker() as session:
+            session.add(WeightClassificationTable.new(result))
+            await session.commit()
+    except:
+        await s3_client.delete_object(result.video_url)
+        raise
+    else:
+        await s3_client.delete_upload(request.file_id)
+
+    await WeightClassificationCreatedTopic.send(
+        key=WeightClassificationCreated.key(),
+        value=WeightClassificationCreated.new(result),
+    )
 
     return result

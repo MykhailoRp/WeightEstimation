@@ -1,14 +1,10 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from sqlalchemy import text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from common.sql.tables.base import Base
 from common.types import UserId
-
-if TYPE_CHECKING:
-    from common.sql.tables import WeightClassificationTable
 
 
 class UserTable(Base):
@@ -21,4 +17,4 @@ class UserTable(Base):
     created_at: Mapped[datetime] = mapped_column(server_default=text("NOW()"))
 
     # relationships
-    weight_classifications: Mapped[list["WeightClassificationTable"]] = relationship(back_populates="created_by")
+    # weight_classifications: Mapped[list["WeightClassificationTable"]] = relationship(back_populates="created_by")
