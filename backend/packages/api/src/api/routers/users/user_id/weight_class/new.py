@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Path
 
-from api.dependencies import SessionMaker
+from api.dependencies import DBSession
 from api.models.weight_class import NewWeightClassification
 from common.models.weight_class import WeightClassification
 from common.sql.tables import WeightClassificationTable
@@ -15,7 +15,7 @@ router = APIRouter()
 async def create_weight_classification(
     user_id: Annotated[UserId, Path()],
     request: Annotated[NewWeightClassification, Body()],
-    session_maker: SessionMaker,
+    session_maker: DBSession,
 ) -> WeightClassification:
 
     result = request.create(user_id=user_id)
