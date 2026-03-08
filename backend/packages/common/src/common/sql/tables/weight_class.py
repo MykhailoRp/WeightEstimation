@@ -1,12 +1,15 @@
 from datetime import datetime
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 from sqlalchemy import TIMESTAMP, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from common.models.weight_class import WeightClassification, WeightClassResult, WeightClassStatus
 from common.sql.tables import Base
 from common.types import WeightClassId
+
+if TYPE_CHECKING:
+    from common.sql.tables.frame import FrameTable
 
 
 class WeightClassificationTable(Base):
@@ -27,6 +30,7 @@ class WeightClassificationTable(Base):
 
     # relationships
     # created_by: Mapped[UserTable] = relationship(back_populates="weight_classifications")
+    frames: Mapped[list["FrameTable"]] = relationship(back_populates="weight_classification")
 
     def m(self) -> WeightClassification:
         return WeightClassification(

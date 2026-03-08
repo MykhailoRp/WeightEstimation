@@ -1,16 +1,28 @@
+import asyncio
+import os
 import uuid
-from contextlib import suppress
-from typing import BinaryIO
+from collections.abc import AsyncGenerator, Iterable
+from contextlib import asynccontextmanager, suppress
+from itertools import batched
+from pathlib import Path
+from tempfile import NamedTemporaryFile, _TemporaryFileWrapper
+from typing import TYPE_CHECKING, BinaryIO
 
 import aioboto3
-from aiobotocore.session import ClientCreatorContext
+import types_aiobotocore_s3 as boto_types
+from aiobotocore.session import ClientCreatorContext as _ClientCreatorContext
 
-from common.s3.config import StorageCongfig
+from common.s3.config import StorageConfig
 from common.types import FileId
+
+if TYPE_CHECKING:
+    ClientCreatorContext = _ClientCreatorContext[boto_types.S3Client]
+else:
+    ClientCreatorContext = _ClientCreatorContext
 
 
 class S3Client:
-    def __init__(self, config: StorageCongfig, session: aioboto3.Session | None = None):
+    def __init__(self, config: StorageConfig, session: aioboto3.Session | None = None):
 
         self.config = config
 
@@ -49,3 +61,29 @@ class S3Client:
     async def move_from_uploads(self, file_id: FileId, to: str) -> None:
         async with self.client() as client:
             await client.copy_object(Bucket=self.config.bucket, CopySource={"Bucket": self.config.bucket, "Key": self.config.get_uploads(file_id)}, Key=to)
+
+    @asynccontextmanager
+    async def file(self, key: str, /) -> AsyncGenerator[_TemporaryFileWrapper, None]:
+        with NamedTemporaryFile(prefix="s3_") as temp_t:
+            async with self.client() as client:
+                await client.download_fileobj(Bucket=self.config.bucket, Key=key, Fileobj=temp_t)
+                yield temp_t
+
+    async def upload_file_to(self, f: str, t: str) -> None:
+        async with self.client() as client:
+            await client.upload_file(f, self.config.bucket, t)
+
+    async def batch_upload_file_to(self, fs: Iterable[str], ts: Iterable[str], *, batch: int = 10) -> None:
+        async with self.client() as client:
+            for f_t_batch in batched(zip(fs, ts, strict=True), batch):
+                await asyncio.gather(
+                    *[client.upload_file(f, self.config.bucket, t) for f, t in f_t_batch],
+                )
+
+    async def upload_directory(self, dir_path: str, to: str, *, batch: int = 10) -> None:
+        directory = Path(dir_path)
+        async with self.client() as client:
+            for file_batch in batched(filter(Path.is_file, directory.rglob("*")), batch):
+                await asyncio.gather(
+                    *[client.upload_file(str(file), self.config.bucket, os.path.join(to, file.relative_to(directory))) for file in file_batch],
+                )

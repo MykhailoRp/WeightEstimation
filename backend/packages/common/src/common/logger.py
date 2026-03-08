@@ -2,7 +2,7 @@ import logging
 import sys
 from types import FrameType
 
-from loguru import logger
+from loguru import _defaults, logger
 
 from common.service_config import ServiceConfig
 
@@ -30,7 +30,7 @@ class InterceptHandler(logging.Handler):
 def setup_logging() -> None:
 
     logger.remove()
-    logger.add(sys.stdout, serialize=ServiceConfig.json_log)
+    logger.add(sys.stdout, serialize=ServiceConfig.json_log, format=_defaults.LOGURU_FORMAT + " | {extra}")
     logger.configure(extra={"service": ServiceConfig.name})
 
     logging.root.handlers = [InterceptHandler()]

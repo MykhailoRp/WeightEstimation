@@ -9,6 +9,9 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "common",
+    "filterpy>=1.4.5",
+    "lap>=0.5.13",
+    "opencv-python-headless>=4.13.0.92",
 ]
 
 [tool.uv.sources]

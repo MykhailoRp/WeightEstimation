@@ -5,7 +5,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from common.s3 import S3Client as _S3Client
-from common.s3 import StorageCongfig
+from common.s3 import StorageConfig
 from common.sql import DatabaseConfig
 
 DATABASE_CONFIG = DatabaseConfig()
@@ -21,7 +21,7 @@ def get_db_session() -> async_sessionmaker[AsyncSession]:
 DBSession = Annotated[async_sessionmaker[AsyncSession], Depends(get_db_session)]
 
 
-STORAGE_CONFIG = StorageCongfig()
+STORAGE_CONFIG = StorageConfig()
 
 
 @lru_cache(maxsize=1)

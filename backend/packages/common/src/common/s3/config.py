@@ -1,9 +1,9 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from common.types import FileId, WeightClassId
+from common.types import FileId, FrameId, WeightClassId
 
 
-class StorageCongfig(BaseSettings):
+class StorageConfig(BaseSettings):
     access_key_id: str = "rustfsadmin"
     secret_access_key: str = "rustfsadmin"
 
@@ -19,3 +19,6 @@ class StorageCongfig(BaseSettings):
 
     def get_weight_class_video(self, weight_class_id: WeightClassId, /) -> str:
         return f"weight_classification/{weight_class_id}/video"
+
+    def get_weight_class_frame(self, weight_class_id: WeightClassId, frame_id: FrameId) -> str:
+        return f"weight_classification/{weight_class_id}/frames/{frame_id}"
