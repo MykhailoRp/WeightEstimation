@@ -7,7 +7,7 @@ from common.models.weight_class.frame import Frame, FrameStatus, TireBBX
 from common.sql.tables.base import Base
 from common.sql.tables.weight_class import WeightClassificationTable
 from common.sql.types.pydantic_type import PydanticJSON
-from common.types import FrameId, WeightClassId
+from common.types import FrameId, S3Key, WeightClassId
 
 
 class FrameTable(Base):
@@ -18,7 +18,7 @@ class FrameTable(Base):
 
     status: Mapped[FrameStatus]
 
-    url: Mapped[str]
+    s3_key: Mapped[S3Key]
 
     tire_bbxs: Mapped[list[TireBBX]] = mapped_column(PydanticJSON(list[TireBBX]))
 
@@ -30,7 +30,7 @@ class FrameTable(Base):
             id=self.id,
             weight_class_id=self.weight_class_id,
             status=self.status,
-            url=self.url,
+            s3_key=self.s3_key,
             tire_bbxs=self.tire_bbxs,
         )
 
@@ -40,6 +40,6 @@ class FrameTable(Base):
             id=model.id,
             weight_class_id=model.weight_class_id,
             status=model.status,
-            url=model.url,
+            s3_key=model.s3_key,
             tire_bbxs=model.tire_bbxs,
         )

@@ -253,7 +253,7 @@ class ExtractedFrame(BaseModel):
             id=self.id,
             weight_class_id=self.weight_class_id,
             status=self.status,
-            url=s3_client.config.get_weight_class_frame(weight_class_id=self.weight_class_id, frame_id=self.id),
+            s3_key=s3_client.config.get_weight_class_frame(weight_class_id=self.weight_class_id, frame_id=self.id),
             tire_bbxs=self.tire_bbxs,
         )
 
@@ -269,7 +269,7 @@ async def upload_batch(s3_client: S3Client, db_session: async_sessionmaker[Async
 
             await s3_client.batch_upload_file_to(
                 fs=(f.loc for f in batch),
-                ts=(f.url for f in frames),
+                ts=(f.s3_key for f in frames),
             )
 
             await session.commit()

@@ -3,7 +3,7 @@ from enum import StrEnum
 from pydantic import BaseModel
 
 from common.models.bounding_box import BoundingBox
-from common.types import FrameId, TireId, WeightClassId
+from common.types import FrameId, S3Key, TireId, WeightClassId
 
 
 class TireBBX(BaseModel):
@@ -25,6 +25,6 @@ class Frame(BaseModel):
 
     status: FrameStatus
 
-    url: str
+    s3_key: S3Key
 
     tire_bbxs: list[TireBBX]

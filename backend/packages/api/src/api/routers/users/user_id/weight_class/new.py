@@ -23,17 +23,17 @@ async def create_weight_classification(
 
     result = request.create(
         user_id=user_id,
-        video_url=s3_client.config.get_weight_class_video,
+        video_key=s3_client.config.get_weight_class_video,
     )
 
-    await s3_client.move_from_uploads(file_id=request.file_id, to=result.video_url)
+    await s3_client.move_from_uploads(file_id=request.file_id, to=result.video_key)
 
     try:
         async with session_maker() as session:
             session.add(WeightClassificationTable.new(result))
             await session.commit()
     except:
-        await s3_client.delete_object(result.video_url)
+        await s3_client.delete_object(result.video_key)
         raise
     else:
         await s3_client.delete_upload(request.file_id)

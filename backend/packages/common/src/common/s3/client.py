@@ -13,7 +13,7 @@ import types_aiobotocore_s3 as boto_types
 from aiobotocore.session import ClientCreatorContext as _ClientCreatorContext
 
 from common.s3.config import StorageConfig
-from common.types import FileId
+from common.types import FileId, S3Key
 
 if TYPE_CHECKING:
     ClientCreatorContext = _ClientCreatorContext[boto_types.S3Client]
@@ -43,14 +43,14 @@ class S3Client:
             with suppress(client.exceptions.BucketAlreadyExists):
                 await client.create_bucket(Bucket=self.config.bucket)
 
-    async def upload_file(self, b: BinaryIO, /) -> FileId:
+    async def new_upload(self, b: BinaryIO, /) -> FileId:
         file_id = FileId(uuid.uuid4())
         async with self.client() as client:
             await client.upload_fileobj(b, self.config.bucket, self.config.get_uploads(file_id))
 
         return file_id
 
-    async def delete_object(self, key: str, /) -> None:
+    async def delete_object(self, key: S3Key, /) -> None:
         async with self.client() as client:
             await client.delete_object(Bucket=self.config.bucket, Key=key)
 
@@ -58,29 +58,29 @@ class S3Client:
         async with self.client() as client:
             await client.delete_object(Bucket=self.config.bucket, Key=self.config.get_uploads(file_id))
 
-    async def move_from_uploads(self, file_id: FileId, to: str) -> None:
+    async def move_from_uploads(self, file_id: FileId, to: S3Key) -> None:
         async with self.client() as client:
             await client.copy_object(Bucket=self.config.bucket, CopySource={"Bucket": self.config.bucket, "Key": self.config.get_uploads(file_id)}, Key=to)
 
     @asynccontextmanager
-    async def file(self, key: str, /) -> AsyncGenerator[_TemporaryFileWrapper, None]:
+    async def file(self, key: S3Key, /) -> AsyncGenerator[_TemporaryFileWrapper, None]:
         with NamedTemporaryFile(prefix="s3_") as temp_t:
             async with self.client() as client:
                 await client.download_fileobj(Bucket=self.config.bucket, Key=key, Fileobj=temp_t)
                 yield temp_t
 
-    async def upload_file_to(self, f: str, t: str) -> None:
+    async def upload_file_to(self, f: str, t: S3Key) -> None:
         async with self.client() as client:
             await client.upload_file(f, self.config.bucket, t)
 
-    async def batch_upload_file_to(self, fs: Iterable[str], ts: Iterable[str], *, batch: int = 10) -> None:
+    async def batch_upload_file_to(self, fs: Iterable[str], ts: Iterable[S3Key], *, batch: int = 10) -> None:
         async with self.client() as client:
             for f_t_batch in batched(zip(fs, ts, strict=True), batch):
                 await asyncio.gather(
                     *[client.upload_file(f, self.config.bucket, t) for f, t in f_t_batch],
                 )
 
-    async def upload_directory(self, dir_path: str, to: str, *, batch: int = 10) -> None:
+    async def upload_directory(self, dir_path: str, to: S3Key, *, batch: int = 10) -> None:
         directory = Path(dir_path)
         async with self.client() as client:
             for file_batch in batched(filter(Path.is_file, directory.rglob("*")), batch):

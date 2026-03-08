@@ -3,7 +3,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel
 
-from common.types import WeightClassId
+from common.types import S3Key, WeightClassId
 
 
 class WeightClassStatus(StrEnum):
@@ -29,6 +29,6 @@ class WeightClassification(BaseModel):
     updated_at: datetime
     finished_at: datetime | None
 
-    video_url: str
+    video_key: S3Key
 
     processing_cost: float | None
