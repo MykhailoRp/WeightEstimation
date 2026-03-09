@@ -15,15 +15,16 @@ from worker.singletons import client_maker, session_maker
     WeightClassificationCreatedTopic,
     name="WeightClassification.SplitFrames",
 )
-async def split_frames(stream: StreamT[WeightClassificationCreated]) -> None:
+async def split_frames(stream: StreamT[bytes]) -> None:
     """Dowloads video from S3 and runs trought wheel identification and Kalman filter, producing wheel bbxs"""
-    async for message in stream:
+    async for message_bytes in stream:
+        message = WeightClassificationCreated.model_validate_json(message_bytes)
         with logger.contextualize(weight_class_id=message.id, video_url=message.video_key):
             s3_client = client_maker()
             db_session = session_maker
 
             async with s3_client.file(message.video_key) as video_file:
-                logger.info("Extracting frames...", file=video_file, file_sz=os.path.getsize(video_file.name))
+                logger.info("Extracting frames...", file_size=os.path.getsize(video_file.name))
                 await asyncio.to_thread(
                     asyncio.run,
                     extract_frames.extract_frames(

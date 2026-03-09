@@ -10,6 +10,10 @@ class WeightClassificationCreated(BaseMessage):
     id: WeightClassId
     video_key: S3Key
 
+    @staticmethod
+    def key(id: WeightClassId) -> str:
+        return id.__str__()
+
     @classmethod
     def new(cls, model: WeightClassification, /) -> Self:
         return cls(
@@ -23,6 +27,10 @@ class WeightClassificationFrameCreated(BaseMessage):
     weight_class_id: WeightClassId
     wheel_bbxs: list[WheelBBX]
     s3_key: S3Key
+
+    @staticmethod
+    def key(id: FrameId, weight_class_id: WeightClassId) -> str:
+        return f"{id}:{weight_class_id}"
 
     @classmethod
     def new(cls, model: Frame, /) -> Self:

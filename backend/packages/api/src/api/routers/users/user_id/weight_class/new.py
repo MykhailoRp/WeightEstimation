@@ -39,8 +39,8 @@ async def create_weight_classification(
         await s3_client.delete_upload(request.file_id)
 
     await WeightClassificationCreatedTopic.send(
-        key=WeightClassificationCreated.key(),
-        value=WeightClassificationCreated.new(result),
+        key=WeightClassificationCreated.key(result.id),
+        value=WeightClassificationCreated.new(result).model_dump_json(),
     )
 
     return result

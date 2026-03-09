@@ -15,9 +15,10 @@ MAX_FRAMES_BATCH = 5
     WeightClassificationFrameCreatedTopic,
     name="WeightClassification.MaskFrames",
 )
-async def mask_frames(stream: StreamT[WeightClassificationFrameCreated]) -> None:
+async def mask_frames(stream: StreamT[bytes]) -> None:
     """Dowloads frame"""
-    async for messages in stream.take(MAX_FRAMES_BATCH, within=3):
+    async for messages_bytes in stream.take(MAX_FRAMES_BATCH, within=3):
+        messages = [WeightClassificationFrameCreated.model_validate_json(message_bytes) for message_bytes in messages_bytes]
         with logger.contextualize(messages_sz=len(messages)):
             s3_client = client_maker()
             db_session = session_maker

@@ -278,13 +278,13 @@ async def upload_batch(s3_client: S3Client, db_session: async_sessionmaker[Async
 
         for frame in frames:
             await WeightClassificationFrameCreatedTopic.send(
-                key=None,
+                key=WeightClassificationFrameCreated.key(frame.id, frame.weight_class_id),
                 value=WeightClassificationFrameCreated(
                     id=frame.id,
                     weight_class_id=frame.weight_class_id,
                     wheel_bbxs=frame.wheel_bbxs,
                     s3_key=frame.s3_key,
-                ),
+                ).model_dump_json(),
             )
 
         return True

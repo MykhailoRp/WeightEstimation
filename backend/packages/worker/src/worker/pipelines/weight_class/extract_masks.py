@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from dataclasses import dataclass
 from itertools import batched
 from typing import Protocol, Self
@@ -124,7 +125,7 @@ class SamFeatureExtractor:
 
     async def extract_features(
         self,
-        requests: list[SamRequest],
+        requests: Sequence[SamRequest],
         db_session: async_sessionmaker[AsyncSession],
         s3_client: S3Client,
     ) -> None:

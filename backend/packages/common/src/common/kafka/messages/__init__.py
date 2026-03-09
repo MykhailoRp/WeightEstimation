@@ -1,10 +1,10 @@
 from abc import abstractmethod
 from typing import Any
 
-from faust import Record
+from pydantic import BaseModel
 
 
-class BaseMessage(Record, abstract=True):
+class BaseMessage(BaseModel):
     @staticmethod
     @abstractmethod
-    def key(*args: Any, **kwargs: Any) -> bytes: ...
+    def key(*args: Any, **kwargs: Any) -> str: ...
