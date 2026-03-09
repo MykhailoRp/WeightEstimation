@@ -39,3 +39,8 @@ migrate :
 migration : migrate
 	@test -n "$(NAME)" || { echo "NAME is required! Usage: make migration NAME=value"; exit 1; }
 	docker compose run --rm db_setup uv run alembic revision --autogenerate -m "$(NAME)"
+
+sam2-checkpoints : 
+	uv run hf download facebook/sam2.1-hiera-small --local-dir checkpoints/sam2
+
+checkpoints : sam2-checkpoints

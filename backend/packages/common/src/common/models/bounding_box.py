@@ -23,8 +23,8 @@ class BoundingBox(BaseModel):
         return self.x + self.w, self.y + self.h
 
     @property
-    def x1y1x2y2(self) -> Sequence[int]:
-        return self.x, self.y, self.x + self.w, self.y + self.h
+    def x1y1x2y2(self) -> list[int]:
+        return [self.x, self.y, self.x + self.w, self.y + self.h]
 
     @property
     def ratio(self) -> float:

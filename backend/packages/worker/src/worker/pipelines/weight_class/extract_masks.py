@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from dataclasses import dataclass
 from itertools import batched
+from pathlib import Path
 from typing import Protocol, Self
 
 import cv2
@@ -76,11 +77,14 @@ class SamProcessed:
         )
 
 
+SAM_CHECKPOINT = Path(__file__).parents[6] / "checkpoints" / "sam2"
+
+
 class SamFeatureExtractor:
     def __init__(self) -> None:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.model: Sam2Model = Sam2Model.from_pretrained("facebook/sam2.1-hiera-small").to(self.device)  # type: ignore[arg-type]
-        self.processor: Sam2Processor = Sam2Processor.from_pretrained("facebook/sam2.1-hiera-small")
+        self.model: Sam2Model = Sam2Model.from_pretrained(SAM_CHECKPOINT).to(self.device)  # type: ignore[arg-type]
+        self.processor: Sam2Processor = Sam2Processor.from_pretrained(SAM_CHECKPOINT)
 
     def _extract_masks(
         self,
@@ -90,7 +94,7 @@ class SamFeatureExtractor:
 
         box_batch = [[box.x1y1x2y2 for wheel in frame_wheels for box in (wheel.rim, wheel.tire)] for frame_wheels in wheel_batch]
 
-        inputs = self.processor(images=frames, input_boxes=box_batch)
+        inputs = self.processor(images=frames, input_boxes=box_batch, return_tensors="pt")
 
         with torch.no_grad():
             outputs = self.model(**inputs)
@@ -100,8 +104,8 @@ class SamFeatureExtractor:
         results_batch = [
             [
                 SamExtraction(
-                    rim_mask=rim,
-                    tire_mask=tire,
+                    rim_mask=rim[0].numpy(),
+                    tire_mask=tire[0].numpy(),
                 )
                 for rim, tire in batched(frame_masks, 2)
             ]

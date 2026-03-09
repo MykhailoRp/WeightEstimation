@@ -44,6 +44,7 @@ WORKDIR /workspace/tests/api_tests/cases
 
 FROM common AS worker
 
+COPY checkpoints checkpoints
 COPY packages/worker packages/worker
 
 RUN uv sync --package worker
