@@ -10,6 +10,7 @@ from common.types import S3Key, WeightClassId
 
 if TYPE_CHECKING:
     from common.sql.tables.frame import FrameTable
+    from common.sql.tables.wheel_feature import WheelFeatureTable
 
 
 class WeightClassificationTable(Base):
@@ -31,6 +32,7 @@ class WeightClassificationTable(Base):
     # relationships
     # created_by: Mapped[UserTable] = relationship(back_populates="weight_classifications")
     frames: Mapped[list["FrameTable"]] = relationship(back_populates="weight_classification")
+    wheel_features: Mapped[list["WheelFeatureTable"]] = relationship(back_populates="weight_classification")
 
     def m(self) -> WeightClassification:
         return WeightClassification(

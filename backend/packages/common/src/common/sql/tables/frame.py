@@ -1,13 +1,16 @@
-from typing import Self
+from typing import TYPE_CHECKING, Self
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from common.models.weight_class.frame import Frame, FrameStatus, TireBBX
+from common.models.weight_class.frame import Frame, FrameStatus, WheelBBX
 from common.sql.tables.base import Base
 from common.sql.tables.weight_class import WeightClassificationTable
 from common.sql.types.pydantic_type import PydanticJSON
 from common.types import FrameId, S3Key, WeightClassId
+
+if TYPE_CHECKING:
+    from common.sql.tables.wheel_feature import WheelFeatureTable
 
 
 class FrameTable(Base):
@@ -20,10 +23,11 @@ class FrameTable(Base):
 
     s3_key: Mapped[S3Key]
 
-    tire_bbxs: Mapped[list[TireBBX]] = mapped_column(PydanticJSON(list[TireBBX]))
+    wheel_bbxs: Mapped[list[WheelBBX]] = mapped_column(PydanticJSON(list[WheelBBX]))
 
     # relationships
     weight_classification: Mapped[WeightClassificationTable] = relationship(back_populates="frames")
+    wheel_features: Mapped[list["WheelFeatureTable"]] = relationship(back_populates="frame")
 
     def m(self) -> Frame:
         return Frame(
@@ -31,7 +35,7 @@ class FrameTable(Base):
             weight_class_id=self.weight_class_id,
             status=self.status,
             s3_key=self.s3_key,
-            tire_bbxs=self.tire_bbxs,
+            wheel_bbxs=self.wheel_bbxs,
         )
 
     @classmethod
@@ -41,5 +45,5 @@ class FrameTable(Base):
             weight_class_id=model.weight_class_id,
             status=model.status,
             s3_key=model.s3_key,
-            tire_bbxs=model.tire_bbxs,
+            wheel_bbxs=model.wheel_bbxs,
         )

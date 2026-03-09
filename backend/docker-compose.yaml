@@ -183,6 +183,7 @@ services:
     container_name: worker
     environment:
       - SERVICE_NAME=worker
+      - HF_HUB_OFFLINE=1
 
       - POSTGRES_HOST=${POSTGRES_HOST:-db}
       - POSTGRES_PORT=${POSTGRES_PORT:-5432}

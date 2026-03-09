@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from common.models.bounding_box import BoundingBox
-from common.models.weight_class.frame import Frame, FrameStatus, TireBBX
+from common.models.weight_class.frame import Frame, FrameStatus, WheelBBX
 from common.s3.client import S3Client
 from common.sql.tables.frame import FrameTable
 from common.types import FrameId, WeightClassId
@@ -208,7 +208,7 @@ def detect_tires(image: npt.NDArray[np.uint8]) -> T_ScoredBBX:
     ).astype(np.float32)
 
 
-async def extract_from_frame(frame: npt.NDArray[np.uint8], sort: Sort) -> list[TireBBX] | None:
+async def extract_from_frame(frame: npt.NDArray[np.uint8], sort: Sort) -> list[WheelBBX] | None:
     results = []
 
     detected_tires = detect_tires(image=frame)
@@ -228,7 +228,7 @@ async def extract_from_frame(frame: npt.NDArray[np.uint8], sort: Sort) -> list[T
         ).scale(0.95)
 
         results.append(
-            TireBBX(
+            WheelBBX(
                 id=index,
                 rim=tire.scale(0.6),
                 tire=tire,
@@ -246,7 +246,7 @@ class ExtractedFrame(BaseModel):
 
     loc: str
 
-    tire_bbxs: list[TireBBX]
+    tire_bbxs: list[WheelBBX]
 
     def create(self, s3_client: S3Client) -> Frame:
         return Frame(
@@ -254,7 +254,7 @@ class ExtractedFrame(BaseModel):
             weight_class_id=self.weight_class_id,
             status=self.status,
             s3_key=s3_client.config.get_weight_class_frame(weight_class_id=self.weight_class_id, frame_id=self.id),
-            tire_bbxs=self.tire_bbxs,
+            wheel_bbxs=self.tire_bbxs,
         )
 
 

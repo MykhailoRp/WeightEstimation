@@ -16,7 +16,7 @@ from worker.singletons import client_maker, session_maker
     name="WeightClassification.SplitFrames",
 )
 async def split_frames(stream: StreamT[WeightClassificationCreated]) -> None:
-    """Dowloads video from S3 and runs trought tire identification and Kalman filter, producing tire bbxs"""
+    """Dowloads video from S3 and runs trought wheel identification and Kalman filter, producing wheel bbxs"""
     async for message in stream:
         with logger.contextualize(weight_class_id=message.id, video_url=message.video_url):
             s3_client = client_maker()
