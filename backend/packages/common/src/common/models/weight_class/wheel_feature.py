@@ -15,6 +15,6 @@ class WheelFeature(WheelBBX):
     weight_class_id: WeightClassId
     frame_id: FrameId
 
-    data: WheelFeatureData
+    data: WheelFeatureData | None
 
     # TODO: add feature calculations here

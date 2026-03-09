@@ -267,7 +267,7 @@ async def upload_batch(s3_client: S3Client, db_session: async_sessionmaker[Async
             session.add_all(frame_reps)
             await session.flush()
 
-            await s3_client.batch_upload_file_to(
+            await s3_client.batch_upload_files_to(
                 fs=(f.loc for f in batch),
                 ts=(f.s3_key for f in frames),
             )

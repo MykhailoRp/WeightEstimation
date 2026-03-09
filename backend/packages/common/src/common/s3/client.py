@@ -1,4 +1,5 @@
 import asyncio
+import io
 import os
 import uuid
 from collections.abc import AsyncGenerator, Iterable
@@ -69,11 +70,25 @@ class S3Client:
                 await client.download_fileobj(Bucket=self.config.bucket, Key=key, Fileobj=temp_t)
                 yield temp_t
 
+    async def get_files(self, keys: list[S3Key], /) -> list[io.BytesIO]:
+        async with self.client() as client:
+            cours = []
+            results = []
+
+            for key in keys:
+                binary_io = io.BytesIO()
+                cours.append(client.download_fileobj(Bucket=self.config.bucket, Key=key, Fileobj=binary_io))
+                results.append(binary_io)
+
+            await asyncio.gather(*cours)
+
+        return results
+
     async def upload_file_to(self, f: str, t: S3Key) -> None:
         async with self.client() as client:
             await client.upload_file(f, self.config.bucket, t)
 
-    async def batch_upload_file_to(self, fs: Iterable[str], ts: Iterable[S3Key], *, batch: int = 10) -> None:
+    async def batch_upload_files_to(self, fs: Iterable[str], ts: Iterable[S3Key], *, batch: int = 10) -> None:
         async with self.client() as client:
             for f_t_batch in batched(zip(fs, ts, strict=True), batch):
                 await asyncio.gather(
