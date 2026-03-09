@@ -18,11 +18,11 @@ from worker.singletons import client_maker, session_maker
 async def split_frames(stream: StreamT[WeightClassificationCreated]) -> None:
     """Dowloads video from S3 and runs trought wheel identification and Kalman filter, producing wheel bbxs"""
     async for message in stream:
-        with logger.contextualize(weight_class_id=message.id, video_url=message.video_url):
+        with logger.contextualize(weight_class_id=message.id, video_url=message.video_key):
             s3_client = client_maker()
             db_session = session_maker
 
-            async with s3_client.file(message.video_url) as video_file:
+            async with s3_client.file(message.video_key) as video_file:
                 logger.info("Extracting frames...", file=video_file, file_sz=os.path.getsize(video_file.name))
                 await asyncio.to_thread(
                     asyncio.run,

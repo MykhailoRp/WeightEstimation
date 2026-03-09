@@ -27,7 +27,10 @@ class FrameTable(Base):
 
     # relationships
     weight_classification: Mapped[WeightClassificationTable] = relationship(back_populates="frames")
-    wheel_features: Mapped[list["WheelFeatureTable"]] = relationship(back_populates="frame")
+    wheel_features: Mapped[list["WheelFeatureTable"]] = relationship(
+        back_populates="frame",
+        foreign_keys="WheelFeatureTable.frame_id, WheelFeatureTable.weight_class_id",
+    )
 
     def m(self) -> Frame:
         return Frame(

@@ -1,6 +1,6 @@
-from typing import Self
+from typing import Any, Self
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, ForeignKeyConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from common.models.bounding_box import BoundingBox
@@ -23,8 +23,15 @@ class WheelFeatureTable(Base):
 
     data: Mapped[WheelFeatureData | None] = mapped_column(PydanticJSON(WheelFeatureData))
 
+    __table_args__: tuple[Any, ...] = (
+        ForeignKeyConstraint(
+            [frame_id, weight_class_id],
+            [FrameTable.id, FrameTable.weight_class_id],
+        ),
+    )
+
     # relationships
-    frame: Mapped[FrameTable] = relationship(back_populates="wheel_features")
+    frame: Mapped[FrameTable] = relationship(back_populates="wheel_features", foreign_keys=[frame_id, weight_class_id])
 
     def m(self) -> WheelFeature:
         return WheelFeature(

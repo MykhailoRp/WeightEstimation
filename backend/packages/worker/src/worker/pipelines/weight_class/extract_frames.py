@@ -8,6 +8,8 @@ import numpy.typing as npt
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from common.kafka.messages.weight_class import WeightClassificationFrameCreated
+from common.kafka.topics import WeightClassificationFrameCreatedTopic
 from common.models.bounding_box import BoundingBox
 from common.models.weight_class.frame import Frame, FrameStatus, WheelBBX
 from common.s3.client import S3Client
@@ -274,6 +276,17 @@ async def upload_batch(s3_client: S3Client, db_session: async_sessionmaker[Async
 
             await session.commit()
 
+        for frame in frames:
+            await WeightClassificationFrameCreatedTopic.send(
+                key=None,
+                value=WeightClassificationFrameCreated(
+                    id=frame.id,
+                    weight_class_id=frame.weight_class_id,
+                    wheel_bbxs=frame.wheel_bbxs,
+                    s3_key=frame.s3_key,
+                ),
+            )
+
         return True
     else:
         return False
@@ -343,4 +356,4 @@ async def extract_frames(
     if frame_id == 0:
         raise RuntimeError("Did not process the video file")
     if saved_frames == 0:
-        raise RuntimeError("Did not find frames with tires")
+        raise RuntimeError("Did not find frames with wheels")
