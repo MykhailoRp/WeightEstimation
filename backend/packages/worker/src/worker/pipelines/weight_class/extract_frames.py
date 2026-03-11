@@ -1,3 +1,4 @@
+import asyncio
 import os
 from collections.abc import Sequence
 from tempfile import TemporaryDirectory
@@ -210,7 +211,7 @@ def detect_tires(image: npt.NDArray[np.uint8]) -> T_ScoredBBX:
     ).astype(np.float32)
 
 
-async def extract_from_frame(frame: npt.NDArray[np.uint8], sort: Sort) -> list[WheelBBX] | None:
+def extract_from_frame(frame: npt.NDArray[np.uint8], sort: Sort) -> list[WheelBBX] | None:
     results = []
 
     detected_tires = detect_tires(image=frame)
@@ -314,12 +315,12 @@ async def extract_frames(
         iou_threshold=0.3,
     )
 
-    cap = cv2.VideoCapture(video_file_name)
+    cap = await asyncio.to_thread(cv2.VideoCapture, video_file_name)
 
     try:
         with TemporaryDirectory() as temp_dir:
             while cap.isOpened():
-                ret, frame = cap.read()
+                ret, frame = await asyncio.to_thread(cap.read)
 
                 if not ret:
                     break
@@ -329,11 +330,11 @@ async def extract_frames(
                 if frame_id % (skip_frame + 1) != 0:
                     continue
 
-                extracted_tires = await extract_from_frame(frame=frame.astype(np.uint8), sort=sort)
+                extracted_tires = extract_from_frame(frame=frame.astype(np.uint8), sort=sort)
 
                 if extracted_tires is not None and len(extracted_tires) > 0:
                     frame_file = os.path.join(temp_dir, f"{frame_id}.jpg")
-                    cv2.imwrite(frame_file, frame)
+                    await asyncio.to_thread(cv2.imwrite, frame_file, frame)
 
                     extracted_frames_batch.append(
                         ExtractedFrame(

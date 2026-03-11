@@ -1,3 +1,4 @@
+import asyncio
 from collections.abc import Sequence
 from dataclasses import dataclass
 from itertools import batched
@@ -136,7 +137,7 @@ class SamFeatureExtractor:
         frames_raw = await s3_client.get_files([request.s3_key for request in requests])
         frames = [Image.open(frame_raw).convert("RGB") for frame_raw in frames_raw]
 
-        masks = self._extract_masks(frames=frames, wheel_batch=[request.wheel_bbxs for request in requests])
+        masks = await asyncio.to_thread(self._extract_masks, frames, [request.wheel_bbxs for request in requests])
 
         boxes = self._post_process_masks(extracted=masks)
 

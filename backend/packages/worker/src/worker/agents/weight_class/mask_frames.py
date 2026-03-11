@@ -1,5 +1,3 @@
-import asyncio
-
 from faust import StreamT
 from loguru import logger
 
@@ -8,7 +6,7 @@ from common.kafka.messages.weight_class import WeightClassificationFrameCreated
 from common.kafka.topics import WeightClassificationFrameCreatedTopic
 from worker.singletons import client_maker, feature_extractor_maker, session_maker
 
-MAX_FRAMES_BATCH = 5
+MAX_FRAMES_BATCH = 30
 
 
 @faust_app.agent(
@@ -25,12 +23,9 @@ async def mask_frames(stream: StreamT[bytes]) -> None:
             feature_extractor = feature_extractor_maker()
 
             logger.info("Extracting features...")
-            await asyncio.to_thread(
-                asyncio.run,
-                feature_extractor.extract_features(
-                    requests=messages,
-                    db_session=db_session,
-                    s3_client=s3_client,
-                ),
+            await feature_extractor.extract_features(
+                requests=messages,
+                db_session=db_session,
+                s3_client=s3_client,
             )
             logger.success("Features extracted")

@@ -1,4 +1,3 @@
-import asyncio
 import os
 
 from faust import StreamT
@@ -25,14 +24,12 @@ async def split_frames(stream: StreamT[bytes]) -> None:
 
             async with s3_client.file(message.video_key) as video_file:
                 logger.info("Extracting frames...", file_size=os.path.getsize(video_file.name))
-                await asyncio.to_thread(
-                    asyncio.run,
-                    extract_frames.extract_frames(
-                        video_file.name,
-                        weight_class_id=message.id,
-                        db_session=db_session,
-                        s3_client=s3_client,
-                    ),
+
+                await extract_frames.extract_frames(
+                    video_file.name,
+                    weight_class_id=message.id,
+                    db_session=db_session,
+                    s3_client=s3_client,
                 )
 
             logger.success("Frames extracted")
