@@ -16,10 +16,13 @@ from sqlalchemy import UUID, Integer, String, column, func, update, values
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from transformers import Sam2Model, Sam2Processor
 
-from common.kafka.messages.weight_class import WheelReadingCreated
+from common.kafka.messages.weight_class import WeightClassificationMasked, WheelReadingCreated
+from common.kafka.topics import WeightClassificationMaskedTopic
 from common.models.bounding_box import BoundingBox
+from common.models.weight_class.weight_class import WeightClassStatus
 from common.models.weight_class.wheel_reading import WheelFeatures
 from common.s3.client import S3Client
+from common.sql.scripts.weight_class import try_set_weight_class_status
 from common.sql.tables.wheel_reading import WheelReadingTable
 from common.sql.types.pydantic_type import PydanticJSONB
 from common.types import S3Key
@@ -107,7 +110,7 @@ class SamFeatureExtractor:
 
         return results_batch
 
-    async def save_masks(self, s3_client: S3Client, requests: Sequence[WheelReadingCreated], extracted: Sequence[SamExtraction]) -> list[tuple[S3Key, S3Key]]:
+    async def _save_masks(self, s3_client: S3Client, requests: Sequence[WheelReadingCreated], extracted: Sequence[SamExtraction]) -> list[tuple[S3Key, S3Key]]:
 
         masks = []
         key_pairs = []
@@ -138,7 +141,7 @@ class SamFeatureExtractor:
     def _post_process_masks(extracted: Sequence[SamExtraction]) -> list[SamProcessed]:
         return [SamProcessed.process(raw) for raw in extracted]
 
-    async def commit_features(
+    async def _commit_features(
         self,
         db_session: async_sessionmaker[AsyncSession],
         requests: Sequence[WheelReadingCreated],
@@ -186,7 +189,16 @@ class SamFeatureExtractor:
 
         async with db_session() as session:
             await session.execute(statement)
+            commited_statuses = await try_set_weight_class_status(session, list({r.weight_class_id for r in requests}), WeightClassStatus.MASKS_EXTRACTED)
             await session.commit()
+
+        for weight_class_id in commited_statuses:
+            await WeightClassificationMaskedTopic.send(
+                key=WeightClassificationMasked.key(weight_class_id),
+                value=WeightClassificationMasked(
+                    id=weight_class_id,
+                ).model_dump_json(),
+            )
 
     async def extract_features(
         self,
@@ -199,8 +211,8 @@ class SamFeatureExtractor:
 
         masks = await asyncio.to_thread(self._extract_masks, frames, [request.raw_features for request in requests])
 
-        masks_on_s3 = await self.save_masks(s3_client, requests, masks)
+        masks_on_s3 = await self._save_masks(s3_client, requests, masks)
 
         boxes = self._post_process_masks(extracted=masks)
 
-        await self.commit_features(db_session, requests, boxes, masks_on_s3)
+        await self._commit_features(db_session, requests, boxes, masks_on_s3)

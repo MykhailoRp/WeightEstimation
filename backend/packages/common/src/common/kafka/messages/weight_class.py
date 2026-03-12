@@ -22,6 +22,20 @@ class WeightClassificationCreated(BaseMessage):
         )
 
 
+class WeightClassificationMasked(BaseMessage):
+    id: WeightClassId
+
+    @staticmethod
+    def key(id: WeightClassId) -> str:
+        return id.__str__()
+
+    @classmethod
+    def new(cls, id: WeightClassId, /) -> Self:
+        return cls(
+            id=id,
+        )
+
+
 class WheelReadingCreated(BaseMessage):
     weight_class_id: WeightClassId
     frame_id: FrameId
@@ -30,8 +44,8 @@ class WheelReadingCreated(BaseMessage):
     s3_key: S3Key
 
     @staticmethod
-    def key(id: WheelId, frame_id: FrameId, weight_class_id: WeightClassId) -> str:
-        return f"{id}:{frame_id}:{weight_class_id}"
+    def key() -> None:
+        return None
 
     @classmethod
     def new(cls, model: WheelReading, s3_key: S3Key) -> Self:

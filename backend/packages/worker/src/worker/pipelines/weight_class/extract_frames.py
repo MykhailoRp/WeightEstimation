@@ -13,8 +13,10 @@ from common.kafka.messages.weight_class import WheelReadingCreated
 from common.kafka.topics import WheelReadingCreatedTopic
 from common.models.bounding_box import BoundingBox
 from common.models.weight_class.frame import Frame
+from common.models.weight_class.weight_class import WeightClassStatus
 from common.models.weight_class.wheel_reading import WheelBBX, WheelReading
 from common.s3.client import S3Client
+from common.sql.scripts.weight_class import try_set_weight_class_status
 from common.sql.tables.frame import FrameTable
 from common.sql.tables.wheel_reading import WheelReadingTable
 from common.types import FrameId, WeightClassId
@@ -262,7 +264,12 @@ class ExtractedFrame(BaseModel):
         return [WheelReading.new(frame=self.create_frame(s3_client), bbx=bbx) for bbx in self.wheel_bbxs]
 
 
-async def commit_processing(s3_client: S3Client, db_session: async_sessionmaker[AsyncSession], batch: Sequence[ExtractedFrame]) -> None:
+async def commit_processing(
+    s3_client: S3Client,
+    db_session: async_sessionmaker[AsyncSession],
+    batch: Sequence[ExtractedFrame],
+    weight_class_id: WeightClassId,
+) -> None:
     frames = [e_f.create_frame(s3_client) for e_f in batch]
     wheels = [wheel for e_f in batch for wheel in e_f.create_reading(s3_client)]
 
@@ -276,13 +283,15 @@ async def commit_processing(s3_client: S3Client, db_session: async_sessionmaker[
         wheel_reps = [WheelReadingTable.new(w) for w in wheels]
         session.add_all(frame_reps)
         session.add_all(wheel_reps)
+        await session.flush()
+        await try_set_weight_class_status(session, [weight_class_id], WeightClassStatus.FRAMES_SPLIT)
         await session.commit()
 
     s3_key_map = {frame.id: frame.s3_key for frame in frame_reps}
 
     for wheel in wheel_reps:
         await WheelReadingCreatedTopic.send(
-            key=WheelReadingCreated.key(wheel.id, wheel.frame_id, wheel.weight_class_id),
+            key=WheelReadingCreated.key(),
             value=WheelReadingCreated(
                 weight_class_id=wheel.weight_class_id,
                 frame_id=wheel.frame_id,
@@ -344,7 +353,7 @@ async def extract_frames(
                         ),
                     )
 
-            await commit_processing(s3_client, db_session, extracted_frames)
+            await commit_processing(s3_client, db_session, extracted_frames, weight_class_id)
             saved_frames += len(extracted_frames)
     finally:
         cap.release()
