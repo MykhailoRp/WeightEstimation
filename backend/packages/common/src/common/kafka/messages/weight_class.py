@@ -1,9 +1,9 @@
 from typing import Self
 
 from common.kafka.messages import BaseMessage
-from common.models.weight_class import Frame, WeightClassification
-from common.models.weight_class.frame import WheelBBX
-from common.types import FrameId, S3Key, WeightClassId
+from common.models.weight_class import WeightClassification
+from common.models.weight_class.wheel_reading import WheelFeatures, WheelReading
+from common.types import FrameId, S3Key, WeightClassId, WheelId
 
 
 class WeightClassificationCreated(BaseMessage):
@@ -22,21 +22,23 @@ class WeightClassificationCreated(BaseMessage):
         )
 
 
-class WeightClassificationFrameCreated(BaseMessage):
-    id: FrameId
+class WheelReadingCreated(BaseMessage):
     weight_class_id: WeightClassId
-    wheel_bbxs: list[WheelBBX]
+    frame_id: FrameId
+    id: WheelId
+    raw_features: WheelFeatures
     s3_key: S3Key
 
     @staticmethod
-    def key(id: FrameId, weight_class_id: WeightClassId) -> str:
-        return f"{id}:{weight_class_id}"
+    def key(id: WheelId, frame_id: FrameId, weight_class_id: WeightClassId) -> str:
+        return f"{id}:{frame_id}:{weight_class_id}"
 
     @classmethod
-    def new(cls, model: Frame, /) -> Self:
+    def new(cls, model: WheelReading, s3_key: S3Key) -> Self:
         return cls(
-            id=model.id,
             weight_class_id=model.weight_class_id,
-            wheel_bbxs=model.wheel_bbxs,
-            s3_key=model.s3_key,
+            frame_id=model.frame_id,
+            id=model.id,
+            raw_features=model.raw_features,
+            s3_key=s3_key,
         )

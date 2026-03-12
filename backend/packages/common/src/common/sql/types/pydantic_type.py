@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 @final
-class PydanticJSON(sa.types.TypeDecorator):
+class PydanticJSONB(sa.types.TypeDecorator):
     """JSON(B) column type that encodes/decodes the value using Pydantic TypeAdapter
 
     SAVING:
@@ -45,7 +45,7 @@ class PydanticJSON(sa.types.TypeDecorator):
     # Otherwise, you should implement the `load_dialect_impl`
     # method to handle different dialects. In this case, the
     # impl variable can reference TypeEngine as a placeholder.
-    impl = sa.types.JSON
+    impl = JSONB
 
     def __init__(self, pydantic_type: type) -> None:
         super().__init__()

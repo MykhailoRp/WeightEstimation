@@ -6,8 +6,8 @@ WeightClassificationCreatedTopic = faust_app.topic(
     value_type=bytes,
 )
 
-WeightClassificationFrameCreatedTopic = faust_app.topic(
-    "weight_classification_frame.created",
+WheelReadingCreatedTopic = faust_app.topic(
+    "wheel_reading.created",
     key_type=str,
     value_type=bytes,
 )

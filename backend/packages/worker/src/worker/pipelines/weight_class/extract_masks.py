@@ -1,26 +1,28 @@
 import asyncio
+import io
 from collections.abc import Sequence
 from dataclasses import dataclass
 from itertools import batched
 from pathlib import Path
-from typing import Protocol, Self
+from typing import Self
 
 import cv2
 import numpy as np
 import numpy.typing as npt
 import torch
 from PIL import Image
+from pydantic import BaseModel
+from sqlalchemy import UUID, Integer, String, column, func, update, values
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from transformers import Sam2Model, Sam2Processor
 
+from common.kafka.messages.weight_class import WheelReadingCreated
 from common.models.bounding_box import BoundingBox
-from common.models.weight_class.frame import WheelBBX
-from common.models.weight_class.wheel_feature import WheelFeature
+from common.models.weight_class.wheel_reading import WheelFeatures
 from common.s3.client import S3Client
-from common.sql.tables.wheel_feature import WheelFeatureTable
-from common.types import FrameId, S3Key, WeightClassId
-
-SUBBATCH_SIZE = 3
+from common.sql.tables.wheel_reading import WheelReadingTable
+from common.sql.types.pydantic_type import PydanticJSONB
+from common.types import S3Key
 
 Mask = npt.NDArray[np.bool]
 
@@ -52,21 +54,13 @@ def mask_to_box(mask: Mask) -> BoundingBox:
     return BoundingBox(x=x1, y=y1, h=y2 - y1, w=x2 - x1)
 
 
-class SamRequest(Protocol):
-    id: FrameId
-    weight_class_id: WeightClassId
-    wheel_bbxs: list[WheelBBX]
-    s3_key: S3Key
-
-
 @dataclass
 class SamExtraction:
     tire_mask: Mask
     rim_mask: Mask
 
 
-@dataclass
-class SamProcessed:
+class SamProcessed(BaseModel):
     tire_bbx: BoundingBox
     rim_bbx: BoundingBox
 
@@ -89,11 +83,11 @@ class SamFeatureExtractor:
 
     def _extract_masks(
         self,
-        frames: list[Image.Image],
-        wheel_batch: list[list[WheelBBX]],
-    ) -> list[list[SamExtraction]]:
+        frames: Sequence[Image.Image],
+        wheel_batch: Sequence[WheelFeatures],
+    ) -> list[SamExtraction]:
 
-        box_batch = [[box.x1y1x2y2 for wheel in frame_wheels for box in (wheel.rim, wheel.tire)] for frame_wheels in wheel_batch]
+        box_batch = [[box.x1y1x2y2 for box in (wheel.rim, wheel.tire)] for wheel in wheel_batch]
 
         inputs = self.processor(images=frames, input_boxes=box_batch, return_tensors="pt")
 
@@ -103,57 +97,110 @@ class SamFeatureExtractor:
         masks = self.processor.post_process_masks(outputs.pred_masks.cpu(), inputs["original_sizes"])  # type: ignore[no-untyped-call]
 
         results_batch = [
-            [
-                SamExtraction(
-                    rim_mask=rim[0].numpy(),
-                    tire_mask=tire[0].numpy(),
-                )
-                for rim, tire in batched(frame_masks, 2)
-            ]
-            for frame_masks in masks
+            SamExtraction(
+                rim_mask=rim[0].numpy(),
+                tire_mask=tire[0].numpy(),
+            )
+            for sub_masks in masks
+            for rim, tire in batched(sub_masks, 2)
         ]
 
         return results_batch
 
-    # def _save_masks(self, extracted: list[list[SamExtraction]]) -> list[list[SamProcessed]]:
-    #     return [
-    #         [
-    #             SamProcessed.process(raw)
-    #             for raw in frame_raw
-    #         ]
-    #         for frame_raw in extracted
-    #     ]
+    async def save_masks(self, s3_client: S3Client, requests: Sequence[WheelReadingCreated], extracted: Sequence[SamExtraction]) -> list[tuple[S3Key, S3Key]]:
+
+        masks = []
+        key_pairs = []
+
+        for request, extraction in zip(requests, extracted, strict=True):
+            rim_mask = io.BytesIO()
+            Image.fromarray((extraction.rim_mask * (255 / extraction.rim_mask.max())).astype(np.uint8)).save(rim_mask, "JPEG")
+            rim_mask.seek(0)
+            masks.append(rim_mask)
+
+            tire_mask = io.BytesIO()
+            Image.fromarray((extraction.tire_mask * (255 / extraction.tire_mask.max())).astype(np.uint8)).save(tire_mask, "JPEG")
+            masks.append(tire_mask)
+            tire_mask.seek(0)
+
+            key_pairs.append(
+                (
+                    s3_client.config.get_wheel_mask(weight_class_id=request.weight_class_id, frame_id=request.frame_id, wheel_id=request.id, t="rim"),
+                    s3_client.config.get_wheel_mask(weight_class_id=request.weight_class_id, frame_id=request.frame_id, wheel_id=request.id, t="tire"),
+                ),
+            )
+
+        await s3_client.batch_upload_bytes_to(masks, (key for pair in key_pairs for key in pair))
+
+        return key_pairs
 
     @staticmethod
-    def _post_process_masks(extracted: list[list[SamExtraction]]) -> list[list[SamProcessed]]:
-        return [[SamProcessed.process(raw) for raw in frame_raw] for frame_raw in extracted]
+    def _post_process_masks(extracted: Sequence[SamExtraction]) -> list[SamProcessed]:
+        return [SamProcessed.process(raw) for raw in extracted]
+
+    async def commit_features(
+        self,
+        db_session: async_sessionmaker[AsyncSession],
+        requests: Sequence[WheelReadingCreated],
+        boxes: list[SamProcessed],
+        masks_on_s3: Sequence[tuple[S3Key, S3Key]],
+    ) -> None:
+        update_batch = [
+            (r.weight_class_id, r.frame_id, r.id, WheelFeatures(rim=b.rim_bbx, tire=b.tire_bbx), *s3_masks)
+            for r, b, s3_masks in zip(requests, boxes, masks_on_s3, strict=True)
+        ]
+
+        values_table = (
+            values(
+                column("weight_class_id", UUID),
+                column("frame_id", Integer),
+                column("id", Integer),
+                column("masked_features", PydanticJSONB(WheelFeatures)),
+                column("rim_mask_key", String),
+                column("tire_mask_key", String),
+            )
+            .data(update_batch)
+            .alias("v")
+        )
+
+        statement = (
+            update(WheelReadingTable)
+            .where(
+                WheelReadingTable.weight_class_id == values_table.c.weight_class_id,
+                WheelReadingTable.frame_id == values_table.c.frame_id,
+                WheelReadingTable.id == values_table.c.id,
+            )
+            .values(
+                masked_features=values_table.c.masked_features,
+                data=WheelReadingTable.data
+                + func.jsonb_build_object(
+                    "rim_mask_key",
+                    values_table.c.rim_mask_key,
+                    "tire_mask_key",
+                    values_table.c.tire_mask_key,
+                    "model_name",
+                    "sam2",
+                ),
+            )
+        )
+
+        async with db_session() as session:
+            await session.execute(statement)
+            await session.commit()
 
     async def extract_features(
         self,
-        requests: Sequence[SamRequest],
+        requests: Sequence[WheelReadingCreated],
         db_session: async_sessionmaker[AsyncSession],
         s3_client: S3Client,
     ) -> None:
         frames_raw = await s3_client.get_files([request.s3_key for request in requests])
         frames = [Image.open(frame_raw).convert("RGB") for frame_raw in frames_raw]
 
-        masks = await asyncio.to_thread(self._extract_masks, frames, [request.wheel_bbxs for request in requests])
+        masks = await asyncio.to_thread(self._extract_masks, frames, [request.raw_features for request in requests])
+
+        masks_on_s3 = await self.save_masks(s3_client, requests, masks)
 
         boxes = self._post_process_masks(extracted=masks)
 
-        features = [
-            WheelFeature(
-                id=wheel_data.id,
-                frame_id=request.id,
-                weight_class_id=request.weight_class_id,
-                rim=box_pair.rim_bbx,
-                tire=box_pair.tire_bbx,
-                data=None,
-            )
-            for frame_boxes, request in zip(boxes, requests, strict=True)
-            for box_pair, wheel_data in zip(frame_boxes, request.wheel_bbxs, strict=True)
-        ]
-
-        async with db_session() as session:
-            session.add_all([WheelFeatureTable.new(feature) for feature in features])
-            await session.commit()
+        await self.commit_features(db_session, requests, boxes, masks_on_s3)

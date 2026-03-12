@@ -9,12 +9,14 @@ import numpy.typing as npt
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from common.kafka.messages.weight_class import WeightClassificationFrameCreated
-from common.kafka.topics import WeightClassificationFrameCreatedTopic
+from common.kafka.messages.weight_class import WheelReadingCreated
+from common.kafka.topics import WheelReadingCreatedTopic
 from common.models.bounding_box import BoundingBox
-from common.models.weight_class.frame import Frame, FrameStatus, WheelBBX
+from common.models.weight_class.frame import Frame
+from common.models.weight_class.wheel_reading import WheelBBX, WheelReading
 from common.s3.client import S3Client
 from common.sql.tables.frame import FrameTable
+from common.sql.tables.wheel_reading import WheelReadingTable
 from common.types import FrameId, WeightClassId
 from worker.custom import Sort
 
@@ -245,52 +247,50 @@ class ExtractedFrame(BaseModel):
     id: FrameId
     weight_class_id: WeightClassId
 
-    status: FrameStatus = FrameStatus.NEW
-
     loc: str
 
-    tire_bbxs: list[WheelBBX]
+    wheel_bbxs: list[WheelBBX]
 
-    def create(self, s3_client: S3Client) -> Frame:
+    def create_frame(self, s3_client: S3Client) -> Frame:
         return Frame(
             id=self.id,
             weight_class_id=self.weight_class_id,
-            status=self.status,
             s3_key=s3_client.config.get_weight_class_frame(weight_class_id=self.weight_class_id, frame_id=self.id),
-            wheel_bbxs=self.tire_bbxs,
         )
 
+    def create_reading(self, s3_client: S3Client) -> list[WheelReading]:
+        return [WheelReading.new(frame=self.create_frame(s3_client), bbx=bbx) for bbx in self.wheel_bbxs]
 
-async def upload_batch(s3_client: S3Client, db_session: async_sessionmaker[AsyncSession], batch: Sequence[ExtractedFrame], max_size: int) -> bool:
-    if len(batch) > max_size:
-        frames = [e_f.create(s3_client) for e_f in batch]
 
-        async with db_session() as session:
-            frame_reps = [FrameTable.new(f) for f in frames]
-            session.add_all(frame_reps)
-            await session.flush()
+async def commit_processing(s3_client: S3Client, db_session: async_sessionmaker[AsyncSession], batch: Sequence[ExtractedFrame]) -> None:
+    frames = [e_f.create_frame(s3_client) for e_f in batch]
+    wheels = [wheel for e_f in batch for wheel in e_f.create_reading(s3_client)]
 
-            await s3_client.batch_upload_files_to(
-                fs=(f.loc for f in batch),
-                ts=(f.s3_key for f in frames),
-            )
+    await s3_client.batch_upload_files_to(
+        fs=(f.loc for f in batch),
+        ts=(f.s3_key for f in frames),
+    )
 
-            await session.commit()
+    async with db_session() as session:
+        frame_reps = [FrameTable.new(f) for f in frames]
+        wheel_reps = [WheelReadingTable.new(w) for w in wheels]
+        session.add_all(frame_reps)
+        session.add_all(wheel_reps)
+        await session.commit()
 
-        for frame in frames:
-            await WeightClassificationFrameCreatedTopic.send(
-                key=WeightClassificationFrameCreated.key(frame.id, frame.weight_class_id),
-                value=WeightClassificationFrameCreated(
-                    id=frame.id,
-                    weight_class_id=frame.weight_class_id,
-                    wheel_bbxs=frame.wheel_bbxs,
-                    s3_key=frame.s3_key,
-                ).model_dump_json(),
-            )
+    s3_key_map = {frame.id: frame.s3_key for frame in frame_reps}
 
-        return True
-    else:
-        return False
+    for wheel in wheel_reps:
+        await WheelReadingCreatedTopic.send(
+            key=WheelReadingCreated.key(wheel.id, wheel.frame_id, wheel.weight_class_id),
+            value=WheelReadingCreated(
+                weight_class_id=wheel.weight_class_id,
+                frame_id=wheel.frame_id,
+                id=wheel.id,
+                raw_features=wheel.raw_features,
+                s3_key=s3_key_map[wheel.frame_id],
+            ).model_dump_json(),
+        )
 
 
 async def extract_frames(
@@ -300,12 +300,11 @@ async def extract_frames(
     s3_client: S3Client,
     *,
     skip_frame: int = 1,
-    frame_batch_size: int = 2**5,
 ) -> None:
 
     assert skip_frame >= 0
 
-    extracted_frames_batch: list[ExtractedFrame] = []
+    extracted_frames: list[ExtractedFrame] = []
     frame_id = 0
     saved_frames = 0
 
@@ -336,21 +335,17 @@ async def extract_frames(
                     frame_file = os.path.join(temp_dir, f"{frame_id}.jpg")
                     await asyncio.to_thread(cv2.imwrite, frame_file, frame)
 
-                    extracted_frames_batch.append(
+                    extracted_frames.append(
                         ExtractedFrame(
                             id=FrameId(frame_id),
                             weight_class_id=weight_class_id,
                             loc=frame_file,
-                            tire_bbxs=extracted_tires,
+                            wheel_bbxs=extracted_tires,
                         ),
                     )
 
-                    if await upload_batch(s3_client, db_session, extracted_frames_batch, frame_batch_size):
-                        saved_frames += len(extracted_frames_batch)
-                        extracted_frames_batch.clear()
-
-            await upload_batch(s3_client, db_session, extracted_frames_batch, 0)
-            saved_frames += len(extracted_frames_batch)
+            await commit_processing(s3_client, db_session, extracted_frames)
+            saved_frames += len(extracted_frames)
     finally:
         cap.release()
 

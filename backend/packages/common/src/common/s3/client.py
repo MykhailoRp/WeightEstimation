@@ -95,6 +95,13 @@ class S3Client:
                     *[client.upload_file(f, self.config.bucket, t) for f, t in f_t_batch],
                 )
 
+    async def batch_upload_bytes_to(self, fs: Iterable[io.BytesIO], ts: Iterable[S3Key], *, batch: int = 10) -> None:
+        async with self.client() as client:
+            for f_t_batch in batched(zip(fs, ts, strict=True), batch):
+                await asyncio.gather(
+                    *[client.upload_fileobj(f, self.config.bucket, t) for f, t in f_t_batch],
+                )
+
     async def upload_directory(self, dir_path: str, to: S3Key, *, batch: int = 10) -> None:
         directory = Path(dir_path)
         async with self.client() as client:

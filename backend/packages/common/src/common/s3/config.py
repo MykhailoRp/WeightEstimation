@@ -1,6 +1,8 @@
+from typing import Literal
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from common.types import FileId, FrameId, S3Key, WeightClassId
+from common.types import FileId, FrameId, S3Key, WeightClassId, WheelId
 
 
 class StorageConfig(BaseSettings):
@@ -21,4 +23,7 @@ class StorageConfig(BaseSettings):
         return S3Key(f"weight_classification/{weight_class_id}/video")
 
     def get_weight_class_frame(self, weight_class_id: WeightClassId, frame_id: FrameId) -> S3Key:
-        return S3Key(f"weight_classification/{weight_class_id}/frames/{frame_id}")
+        return S3Key(f"weight_classification/{weight_class_id}/frames/{frame_id}/frame")
+
+    def get_wheel_mask(self, weight_class_id: WeightClassId, frame_id: FrameId, wheel_id: WheelId, t: Literal["rim", "tire"]) -> S3Key:
+        return S3Key(f"weight_classification/{weight_class_id}/frames/{frame_id}/masks/{wheel_id}_{t}")
