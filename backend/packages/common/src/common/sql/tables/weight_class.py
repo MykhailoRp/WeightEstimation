@@ -10,14 +10,17 @@ from common.types import S3Key, WeightClassId
 
 if TYPE_CHECKING:
     from common.sql.tables.frame import FrameTable
+    from common.sql.tables.wheel_aggregation import WheelAggregationTable
 
 
 class WeightClassificationTable(Base):
     __tablename__ = "weight_classifications"
 
     id: Mapped[WeightClassId] = mapped_column(primary_key=True)
+    vehicle_identifier: Mapped[str]
     # user_id: Mapped[UserId] = mapped_column(ForeignKey(UserTable.id)) # TODO: enable after implementing users
     status: Mapped[WeightClassStatus]
+    assigned: Mapped[WeightClassResult]
     result: Mapped[WeightClassResult | None]
 
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP(True))
@@ -31,11 +34,14 @@ class WeightClassificationTable(Base):
     # relationships
     # created_by: Mapped[UserTable] = relationship(back_populates="weight_classifications")
     frames: Mapped[list["FrameTable"]] = relationship(back_populates="weight_classification")
+    wheel_aggregations: Mapped[list["WheelAggregationTable"]] = relationship(back_populates="weight_classification")
 
     def m(self) -> WeightClassification:
         return WeightClassification(
             id=self.id,
+            vehicle_identifier=self.vehicle_identifier,
             status=self.status,
+            assigned=self.assigned,
             result=self.result,
             created_at=self.created_at,
             updated_at=self.updated_at,
@@ -48,7 +54,9 @@ class WeightClassificationTable(Base):
     def new(cls, model: WeightClassification, /) -> Self:
         return cls(
             id=model.id,
+            vehicle_identifier=model.vehicle_identifier,
             status=model.status,
+            assigned=model.assigned,
             result=model.result,
             created_at=model.created_at,
             updated_at=model.updated_at,

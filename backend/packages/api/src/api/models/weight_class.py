@@ -4,12 +4,15 @@ from datetime import UTC, datetime
 
 from pydantic import BaseModel
 
-from common.models.weight_class import WeightClassification, WeightClassStatus
+from common.models.weight_class import WeightClassification, WeightClassResult, WeightClassStatus
 from common.types import FileId, S3Key, UserId, WeightClassId
 
 
 class NewWeightClassification(BaseModel):
     file_id: FileId
+
+    vehicle_identifier: str
+    assigned: WeightClassResult
 
     def create(self, user_id: UserId, video_key: Callable[[WeightClassId], S3Key]) -> WeightClassification:
 
@@ -19,7 +22,9 @@ class NewWeightClassification(BaseModel):
         return WeightClassification(
             id=id_,
             # user_id=user_id,
+            vehicle_identifier=self.vehicle_identifier,
             status=WeightClassStatus.PENDING,
+            assigned=self.assigned,
             result=None,
             created_at=now,
             updated_at=now,

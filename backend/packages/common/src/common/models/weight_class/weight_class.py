@@ -21,8 +21,10 @@ class WeightClassResult(StrEnum):
 
 class WeightClassification(BaseModel):
     id: WeightClassId
+    vehicle_identifier: str
     # user_id: UserId  # TODO: enable after implementing users
     status: WeightClassStatus
+    assigned: WeightClassResult
     result: WeightClassResult | None
 
     created_at: datetime
