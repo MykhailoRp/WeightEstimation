@@ -19,6 +19,25 @@ services:
       start_period: 2s
     restart: unless-stopped
 
+  common_tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: common_tests
+    container_name: common_tests
+    environment:
+      - SERVICE_NAME=common_tests
+      - POSTGRES_HOST=test_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=common_test
+      - POSTGRES_DRIVER=psycopg
+    command: ["uv", "run", "pytest", "-vv"]
+    depends_on:
+      test_db:
+        condition: service_healthy
+
   api_tests:
     build:
       context: .
@@ -43,6 +62,8 @@ services:
     container_name: test_result
     depends_on:
       api_tests:
+        condition: service_completed_successfully
+      common_tests:
         condition: service_completed_successfully
     command: ["exit", "0"]
 

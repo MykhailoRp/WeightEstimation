@@ -13,6 +13,7 @@ members = [
     "packages/worker",
     "packages/db_setup",
     "tests/testlib",
+    "tests/common_tests",
     "tests/api_tests",
 ]
 
@@ -26,6 +27,16 @@ dev = [
 
 [tool.mypy]
 exclude_gitignore = true
+explicit_package_bases = true
+mypy_path = [
+    "packages/common/src",
+    "packages/api/src",
+    "packages/worker/src",
+    "packages/db_setup/src",
+    "tests/testlib/src",
+    "tests/common_tests/src",
+    "tests/api_tests/src",
+]
 
 disallow_untyped_defs = true
 disallow_untyped_calls = true
@@ -66,7 +77,7 @@ ignore = [
 unfixable = ["F401"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["api", "common", "worker", "db_setup", "testlib", "api_tests"]
+known-first-party = ["api", "common", "worker", "db_setup", "testlib", "common_tests", "api_tests"]
 
 [tool.ruff.format]
 quote-style = "double"

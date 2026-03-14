@@ -15,6 +15,15 @@ COPY packages/common/pyproject.toml  packages/common/pyproject.toml
 RUN uv sync --package common --no-install-workspace
 
 
+FROM common_env AS common_test_env
+
+COPY packages/db_setup/pyproject.toml  packages/db_setup/pyproject.toml
+COPY tests/testlib/pyproject.toml  tests/testlib/pyproject.toml
+COPY tests/common_tests/pyproject.toml  tests/common_tests/pyproject.toml
+
+RUN uv sync --package common-tests --no-install-workspace
+
+
 FROM common_env AS db_setup_env
 
 COPY packages/db_setup/pyproject.toml  packages/db_setup/pyproject.toml
@@ -27,6 +36,15 @@ FROM common_env AS api_env
 COPY packages/api/pyproject.toml  packages/api/pyproject.toml
 
 RUN uv sync --package api --no-install-workspace
+
+
+FROM api_env AS api_test_env
+
+COPY packages/db_setup/pyproject.toml  packages/db_setup/pyproject.toml
+COPY tests/testlib/pyproject.toml  tests/testlib/pyproject.toml
+COPY tests/api_tests/pyproject.toml  tests/api_tests/pyproject.toml
+
+RUN uv sync --package api-tests --no-install-workspace
 
 
 FROM common_env AS worker_env
@@ -55,6 +73,19 @@ COPY packages/common packages/common
 RUN uv sync --package common
 
 
+FROM common AS common_tests
+
+COPY --from=common_test_env /workspace/.venv /workspace/.venv
+
+COPY tests/testlib tests/testlib
+COPY tests/common_tests tests/common_tests
+COPY packages/db_setup packages/db_setup
+
+RUN uv sync --package common-tests
+
+WORKDIR /workspace/tests/common_tests/cases
+
+
 FROM common AS db_setup
 
 COPY --from=db_setup_env /workspace/.venv /workspace/.venv
@@ -76,6 +107,8 @@ RUN uv sync --package api
 
 
 FROM api AS api_tests
+
+COPY --from=api_test_env /workspace/.venv /workspace/.venv
 
 COPY tests/testlib tests/testlib
 COPY tests/api_tests tests/api_tests

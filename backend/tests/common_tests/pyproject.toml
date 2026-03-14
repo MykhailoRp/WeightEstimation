@@ -1,0 +1,24 @@
+[project]
+name = "common-tests"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Mykhailo Razbeiko", email = "mykhailo.razb@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "testlib",
+]
+
+[build-system]
+requires = ["uv_build>=0.10.4,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+testlib = { workspace = true }
+api = { workspace = true }
+
+[project.entry-points.pytest11]
+testlib = "testlib"
+common_tests = "common_tests"

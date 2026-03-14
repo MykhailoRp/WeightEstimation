@@ -1,8 +1,8 @@
 from collections.abc import Sequence
 
 from loguru import logger
-from sqlalchemy import ColumnElement, and_, case, func, select, update
-from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import ColumnElement, and_, case, func, literal, select, update
+from sqlalchemy.dialects.postgresql import JSONB, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
@@ -39,7 +39,10 @@ async def try_set_weight_class_status(session: AsyncSession, weight_class_ids: S
             pass
         case WeightClassStatus.MASKS_EXTRACTED:
             wheel_features_extracted = (
-                select(WheelReadingTable.weight_class_id.label("id"), func.bool_and(WheelReadingTable.masked_features.is_not(None)).label("check"))
+                select(
+                    WheelReadingTable.weight_class_id.label("id"),
+                    func.bool_and(WheelReadingTable.masked_features.is_distinct_from(literal(None, JSONB))).label("check"),
+                )
                 .group_by(WheelReadingTable.weight_class_id)
                 .where(WheelReadingTable.weight_class_id.in_(weight_class_ids))
                 .cte("wheel_features_extracted")
