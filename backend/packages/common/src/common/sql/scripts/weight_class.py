@@ -1,16 +1,14 @@
 from collections.abc import Sequence
 
 from loguru import logger
-from sqlalchemy import ColumnElement, Enum, and_, case, func, literal, select, update
-from sqlalchemy.dialects.postgresql import JSONB, insert
+from sqlalchemy import ColumnElement, func, literal, select, update
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
 from common.models.weight_class import WeightClassStatus
-from common.models.weight_class.weight_class import WeightClassification, WeightClassResult
-from common.models.weight_class.wheel_aggregation import WheelAggregation
+from common.models.weight_class.weight_class import WeightClassification
 from common.sql.tables.weight_class import WeightClassificationTable
-from common.sql.tables.wheel_aggregation import WheelAggregationTable
 from common.sql.tables.wheel_reading import WheelReadingTable
 from common.types import WeightClassId
 
@@ -25,7 +23,9 @@ def cdf(
 
 
 async def try_set_weight_class_status(
-    session: AsyncSession, weight_class_ids: Sequence[WeightClassId], status: WeightClassStatus
+    session: AsyncSession,
+    weight_class_ids: Sequence[WeightClassId],
+    status: WeightClassStatus,
 ) -> list[WeightClassification]:
 
     statement = (
@@ -61,128 +61,3 @@ async def try_set_weight_class_status(
     models = [t.m() for t in results]
     logger.success("Status set", result_ids=[m.id for m in models])
     return models
-
-
-async def generate_aggregations(
-    session: AsyncSession,
-    weight_class_ids: list[WeightClassId],
-    *,
-    compression_lower: float = 0.4,
-    compression_upper: float = 1.2,
-) -> list[WheelAggregation]:
-
-    q1 = func.percentile_cont(0.25).within_group(WheelReadingTable.compression.asc()).label("q1")
-    q3 = func.percentile_cont(0.75).within_group(WheelReadingTable.compression.asc()).label("q3")
-    iqr = (1.5 * (q3 - q1)).label("iqr")
-
-    outlier_filter = (
-        select(
-            WheelReadingTable.weight_class_id,
-            WheelReadingTable.id,
-            (q1 - iqr).label("lower"),
-            (q3 + iqr).label("upper"),
-        )
-        .group_by(
-            WheelReadingTable.weight_class_id,
-            WheelReadingTable.id,
-        )
-        .where(
-            WheelReadingTable.weight_class_id.in_(weight_class_ids),
-            WheelReadingTable.compression.between(compression_lower, compression_upper),
-        )
-        .cte("outlier_filter")
-    )
-
-    wheel_median = func.percentile_cont(0.5).within_group(WheelReadingTable.compression.asc()).label("median")
-    wheel_std = func.stddev_pop(WheelReadingTable.compression).label("std")
-
-    aggregations = (
-        select(
-            WheelReadingTable.weight_class_id,
-            WheelReadingTable.id,
-            wheel_median,
-            wheel_std,
-        )
-        .where(
-            WheelReadingTable.weight_class_id.in_(weight_class_ids),
-            WheelReadingTable.compression.between(outlier_filter.c.lower, outlier_filter.c.upper),
-        )
-        .join(
-            outlier_filter,
-            onclause=and_(outlier_filter.c.weight_class_id == WheelReadingTable.weight_class_id, outlier_filter.c.id == WheelReadingTable.id),
-        )
-        .group_by(WheelReadingTable.weight_class_id, WheelReadingTable.id)
-    )
-
-    statement = insert(WheelAggregationTable).from_select(["weight_class_id", "id", "median", "std"], aggregations).returning(WheelAggregationTable)
-
-    results = await session.scalars(statement)
-    return [r.m() for r in results]
-
-
-async def predict_result(session: AsyncSession, vehicle_identifier: str, weight_class_id: WeightClassId, default_std: float = 0.05) -> WeightClassResult | None:
-    label = func.coalesce(WeightClassificationTable.result, WeightClassificationTable.assigned).label("label")
-
-    loaded_mean = func.avg(WheelAggregationTable.median).filter(label == WeightClassResult.LOADED)
-    loaded_std = func.nullif(func.stddev_pop(WheelAggregationTable.median).filter(label == WeightClassResult.LOADED), 0)
-    empty_mean = func.avg(WheelAggregationTable.median).filter(label == WeightClassResult.EMPTY)
-    empty_std = func.nullif(func.stddev_pop(WheelAggregationTable.median).filter(label == WeightClassResult.EMPTY), 0)
-
-    converted_loaded_mean = empty_mean * 0.918
-    converted_empty_mean = loaded_mean * 1.088
-
-    safe_loaded_mean = func.coalesce(loaded_mean, converted_loaded_mean).label("loaded_mean")
-    safe_loaded_std = func.coalesce(loaded_std, empty_std, default_std).label("loaded_std")
-    safe_empty_mean = func.coalesce(empty_mean, converted_empty_mean).label("empty_mean")
-    safe_empty_std = func.coalesce(empty_std, loaded_std, default_std).label("empty_std")
-
-    distributions = (
-        select(
-            WheelAggregationTable.id,
-            safe_loaded_mean,
-            safe_loaded_std,
-            safe_empty_mean,
-            safe_empty_std,
-        )
-        .where(WeightClassificationTable.id != weight_class_id, WeightClassificationTable.vehicle_identifier == vehicle_identifier)
-        .join(WeightClassificationTable, onclause=WeightClassificationTable.id == WheelAggregationTable.weight_class_id)
-        .group_by(WheelAggregationTable.id)
-        .cte("distributions")
-    )
-
-    loaded_score = cdf(WheelAggregationTable.median, distributions.c.loaded_mean, distributions.c.loaded_std).label("loaded_score")
-    empty_score = cdf(WheelAggregationTable.median, distributions.c.empty_mean, distributions.c.empty_std).label("empty_score")
-
-    confidance = func.greatest(loaded_score, empty_score) / (loaded_score + empty_score).label("confidance")
-    wheel_prediction = (
-        case(
-            (loaded_score > empty_score, WeightClassResult.LOADED),
-            else_=WeightClassResult.EMPTY,
-        )
-        .cast(Enum(WeightClassResult, name="weightclassresult"))
-        .label("prediction")
-    )
-
-    prediction = (
-        select(
-            func.mode().within_group(wheel_prediction.asc()).label("prediction"),
-        )
-        .join(distributions, onclause=distributions.c.id == WheelAggregationTable.id)
-        .where(
-            # todo; move to config
-            WheelAggregationTable.std < 0.12,
-            confidance > 0.65,
-            WheelAggregationTable.id.not_in([0]),  # ignore wheel under cabin
-        )
-    )
-
-    statement = (
-        update(WeightClassificationTable)
-        .values(result=prediction)
-        .where(WeightClassificationTable.id == weight_class_id)
-        .returning(WeightClassificationTable.result)
-    )
-
-    final_result = await session.scalar(statement)
-
-    return final_result

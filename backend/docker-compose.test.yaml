@@ -55,10 +55,31 @@ services:
       test_db:
         condition: service_healthy
 
+  worker_tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: worker_tests
+    container_name: worker_tests
+    environment:
+      - SERVICE_NAME=worker_tests
+      - POSTGRES_HOST=test_db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=worker_test
+      - POSTGRES_DRIVER=psycopg
+    command: ["uv", "run", "pytest", "-vv"]
+    depends_on:
+      test_db:
+        condition: service_healthy
+
   test_result:
     image: alpine
     container_name: test_result
     depends_on:
+      worker_tests:
+        condition: service_completed_successfully
       api_tests:
         condition: service_completed_successfully
       common_tests:

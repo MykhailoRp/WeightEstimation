@@ -31,6 +31,15 @@ class WeightClassificationMasked(BaseMessage):
         return vehicle_identifier
 
 
+class WeightClassificationCompleted(BaseMessage):
+    id: WeightClassId
+    vehicle_identifier: str
+
+    @staticmethod
+    def key(vehicle_identifier: str) -> str:
+        return vehicle_identifier
+
+
 class WheelReadingCreated(BaseMessage):
     weight_class_id: WeightClassId
     frame_id: FrameId

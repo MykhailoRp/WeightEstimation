@@ -54,6 +54,15 @@ COPY packages/worker/pyproject.toml  packages/worker/pyproject.toml
 RUN uv sync --package worker --no-install-workspace
 
 
+FROM worker_env AS worker_test_env
+
+COPY packages/db_setup/pyproject.toml  packages/db_setup/pyproject.toml
+COPY tests/testlib/pyproject.toml  tests/testlib/pyproject.toml
+COPY tests/worker_tests/pyproject.toml  tests/worker_tests/pyproject.toml
+
+RUN uv sync --package worker_tests --no-install-workspace
+
+
 FROM ghcr.io/astral-sh/uv:python3.12-trixie-slim AS base
 
 ENV UV_NO_DEV=1
@@ -81,7 +90,7 @@ COPY tests/testlib tests/testlib
 COPY tests/common_tests tests/common_tests
 COPY packages/db_setup packages/db_setup
 
-RUN uv sync --package common-tests
+RUN uv sync --package common_tests
 
 WORKDIR /workspace/tests/common_tests/cases
 
@@ -111,8 +120,8 @@ FROM api AS api_tests
 COPY --from=api_test_env /workspace/.venv /workspace/.venv
 
 COPY tests/testlib tests/testlib
-COPY tests/api_tests tests/api_tests
 COPY packages/db_setup packages/db_setup
+COPY tests/api_tests tests/api_tests
 
 RUN uv sync --package api_tests
 
@@ -127,3 +136,16 @@ COPY checkpoints checkpoints
 COPY packages/worker packages/worker
 
 RUN uv sync --package worker
+
+
+FROM worker AS worker_tests
+
+COPY --from=worker_test_env /workspace/.venv /workspace/.venv
+
+COPY tests/testlib tests/testlib
+COPY packages/db_setup packages/db_setup
+COPY tests/worker_tests tests/worker_tests
+
+RUN uv sync --package worker_tests
+
+WORKDIR /workspace/tests/worker_tests/cases

@@ -7,10 +7,10 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.models.weight_class import WeightClassification, WeightClassResult, WeightClassStatus, WheelAggregation
-from common.sql.scripts.weight_class import predict_result
 from common.sql.tables import WeightClassificationTable
 from common.sql.tables.wheel_aggregation import WheelAggregationTable
 from common.types import S3Key, WeightClassId, WheelId
+from worker.pipelines.weight_class.extract_results import predict_result
 
 unpredicted_class_loaded = WeightClassification(
     id=WeightClassId(uuid.UUID("00000000-0000-0000-0000-000000000001")),

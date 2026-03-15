@@ -15,6 +15,7 @@ members = [
     "tests/testlib",
     "tests/common_tests",
     "tests/api_tests",
+    "tests/worker_tests",
 ]
 
 [dependency-groups]
@@ -36,6 +37,7 @@ mypy_path = [
     "tests/testlib/src",
     "tests/common_tests/src",
     "tests/api_tests/src",
+    "tests/worker_tests/src",
 ]
 
 disallow_untyped_defs = true
@@ -77,7 +79,7 @@ ignore = [
 unfixable = ["F401"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["api", "common", "worker", "db_setup", "testlib", "common_tests", "api_tests"]
+known-first-party = ["api", "common", "worker", "db_setup", "testlib", "common_tests", "api_tests", "worker_tests"]
 
 [tool.ruff.format]
 quote-style = "double"
