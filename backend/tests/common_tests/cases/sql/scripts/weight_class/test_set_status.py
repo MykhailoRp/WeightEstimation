@@ -83,7 +83,7 @@ uncompleted_reading = WheelReading(
 
 @pytest_asyncio.fixture(scope="module")
 async def module_session(session_session: AsyncSession) -> AsyncGenerator[AsyncSession, None]:
-    async with session_session.begin_nested():
+    async with session_session.begin_nested() as nested:
         session_session.add_all(
             [
                 WeightClassificationTable.new(completed_class),
@@ -96,6 +96,7 @@ async def module_session(session_session: AsyncSession) -> AsyncGenerator[AsyncS
         )
         await session_session.flush()
         yield session_session
+        await nested.rollback()
 
 
 @pytest.mark.asyncio
@@ -108,4 +109,4 @@ async def test_set_weight_class_status_masks_extracted(function_session: AsyncSe
     assert complted_status is WeightClassStatus.MASKS_EXTRACTED
     assert uncomplted_status is WeightClassStatus.FRAMES_SPLIT
 
-    assert result == [completed_class.id]
+    assert [r.id for r in result] == [completed_class.id]

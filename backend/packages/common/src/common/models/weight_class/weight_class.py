@@ -7,16 +7,16 @@ from common.types import S3Key, WeightClassId
 
 
 class WeightClassStatus(StrEnum):
-    PENDING = "pending"
-    FRAMES_SPLIT = "frames_split"
-    MASKS_EXTRACTED = "masks_extracted"
-    FEATURES_EXTRACTED = "features_extracted"
-    COMPLETED = "completed"
+    PENDING = "PENDING"
+    FRAMES_SPLIT = "FRAMES_SPLIT"
+    MASKS_EXTRACTED = "MASKS_EXTRACTED"
+    FEATURES_EXTRACTED = "FEATURES_EXTRACTED"
+    COMPLETED = "COMPLETED"
 
 
 class WeightClassResult(StrEnum):
-    EMPTY = "empty"
-    LOADED = "loaded"
+    EMPTY = "EMPTY"
+    LOADED = "LOADED"
 
 
 class WeightClassification(BaseModel):

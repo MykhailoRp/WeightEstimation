@@ -13,6 +13,15 @@ class WheelFeatures(BaseModel):
     rim: BoundingBox
     tire: BoundingBox
 
+    def get_compression(self) -> float:
+        try:
+            bottom_compression = self.rim.w / self.rim.h * ((self.tire.y + self.tire.h) - (self.rim.y + self.rim.h))
+            left_perc = bottom_compression / (self.rim.x - self.tire.x)
+            right_perc = bottom_compression / ((self.tire.x + self.tire.w) - (self.rim.x + self.rim.w))
+            return (left_perc + right_perc) / 2
+        except ZeroDivisionError:
+            return 0.0
+
 
 class WheelBBX(WheelFeatures):
     id: WheelId

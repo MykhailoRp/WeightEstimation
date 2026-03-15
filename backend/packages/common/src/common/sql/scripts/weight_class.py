@@ -1,13 +1,14 @@
 from collections.abc import Sequence
 
 from loguru import logger
-from sqlalchemy import ColumnElement, and_, case, func, literal, select, update
+from sqlalchemy import ColumnElement, Enum, and_, case, func, literal, select, update
 from sqlalchemy.dialects.postgresql import JSONB, insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
 from common.models.weight_class import WeightClassStatus
-from common.models.weight_class.weight_class import WeightClassResult
+from common.models.weight_class.weight_class import WeightClassification, WeightClassResult
+from common.models.weight_class.wheel_aggregation import WheelAggregation
 from common.sql.tables.weight_class import WeightClassificationTable
 from common.sql.tables.wheel_aggregation import WheelAggregationTable
 from common.sql.tables.wheel_reading import WheelReadingTable
@@ -23,13 +24,12 @@ def cdf(
     return 2 * func.least(p, 1 - p)
 
 
-async def try_set_weight_class_status(session: AsyncSession, weight_class_ids: Sequence[WeightClassId], status: WeightClassStatus) -> list[WeightClassId]:
+async def try_set_weight_class_status(
+    session: AsyncSession, weight_class_ids: Sequence[WeightClassId], status: WeightClassStatus
+) -> list[WeightClassification]:
 
     statement = (
-        update(WeightClassificationTable)
-        .where(WeightClassificationTable.id.in_(weight_class_ids))
-        .values(status=status)
-        .returning(WeightClassificationTable.id)
+        update(WeightClassificationTable).where(WeightClassificationTable.id.in_(weight_class_ids)).values(status=status).returning(WeightClassificationTable)
     )
 
     match status:
@@ -58,9 +58,9 @@ async def try_set_weight_class_status(session: AsyncSession, weight_class_ids: S
 
     logger.info("Setting status", status=status, request_ids=weight_class_ids)
     results = await session.scalars(statement)
-    result_ids = list(results.all())
-    logger.success("Status set", result_ids=result_ids)
-    return result_ids
+    models = [t.m() for t in results]
+    logger.success("Status set", result_ids=[m.id for m in models])
+    return models
 
 
 async def generate_aggregations(
@@ -69,7 +69,7 @@ async def generate_aggregations(
     *,
     compression_lower: float = 0.4,
     compression_upper: float = 1.2,
-) -> None:
+) -> list[WheelAggregation]:
 
     q1 = func.percentile_cont(0.25).within_group(WheelReadingTable.compression.asc()).label("q1")
     q3 = func.percentile_cont(0.75).within_group(WheelReadingTable.compression.asc()).label("q3")
@@ -114,21 +114,35 @@ async def generate_aggregations(
         .group_by(WheelReadingTable.weight_class_id, WheelReadingTable.id)
     )
 
-    statement = insert(WheelAggregationTable).from_select(["weight_class_id", "id", "median", "std"], aggregations)
+    statement = insert(WheelAggregationTable).from_select(["weight_class_id", "id", "median", "std"], aggregations).returning(WheelAggregationTable)
 
-    await session.execute(statement)
+    results = await session.scalars(statement)
+    return [r.m() for r in results]
 
 
-async def predict_result(session: AsyncSession, vehicle_identifier: str, weight_class_id: WeightClassId) -> WeightClassResult | None:
+async def predict_result(session: AsyncSession, vehicle_identifier: str, weight_class_id: WeightClassId, default_std: float = 0.05) -> WeightClassResult | None:
     label = func.coalesce(WeightClassificationTable.result, WeightClassificationTable.assigned).label("label")
+
+    loaded_mean = func.avg(WheelAggregationTable.median).filter(label == WeightClassResult.LOADED)
+    loaded_std = func.nullif(func.stddev_pop(WheelAggregationTable.median).filter(label == WeightClassResult.LOADED), 0)
+    empty_mean = func.avg(WheelAggregationTable.median).filter(label == WeightClassResult.EMPTY)
+    empty_std = func.nullif(func.stddev_pop(WheelAggregationTable.median).filter(label == WeightClassResult.EMPTY), 0)
+
+    converted_loaded_mean = empty_mean * 0.918
+    converted_empty_mean = loaded_mean * 1.088
+
+    safe_loaded_mean = func.coalesce(loaded_mean, converted_loaded_mean).label("loaded_mean")
+    safe_loaded_std = func.coalesce(loaded_std, empty_std, default_std).label("loaded_std")
+    safe_empty_mean = func.coalesce(empty_mean, converted_empty_mean).label("empty_mean")
+    safe_empty_std = func.coalesce(empty_std, loaded_std, default_std).label("empty_std")
 
     distributions = (
         select(
             WheelAggregationTable.id,
-            func.avg(WheelAggregationTable.median).filter(label == WeightClassResult.LOADED).label("loaded_mean"),
-            func.stddev_pop(WheelAggregationTable.median).filter(label == WeightClassResult.LOADED).label("loaded_std"),
-            func.avg(WheelAggregationTable.median).filter(label == WeightClassResult.EMPTY).label("empty_mean"),
-            func.stddev_pop(WheelAggregationTable.median).filter(label == WeightClassResult.EMPTY).label("empty_std"),
+            safe_loaded_mean,
+            safe_loaded_std,
+            safe_empty_mean,
+            safe_empty_std,
         )
         .where(WeightClassificationTable.id != weight_class_id, WeightClassificationTable.vehicle_identifier == vehicle_identifier)
         .join(WeightClassificationTable, onclause=WeightClassificationTable.id == WheelAggregationTable.weight_class_id)
@@ -140,10 +154,14 @@ async def predict_result(session: AsyncSession, vehicle_identifier: str, weight_
     empty_score = cdf(WheelAggregationTable.median, distributions.c.empty_mean, distributions.c.empty_std).label("empty_score")
 
     confidance = func.greatest(loaded_score, empty_score) / (loaded_score + empty_score).label("confidance")
-    wheel_prediction = case(
-        (loaded_score > empty_score, WeightClassResult.LOADED),
-        else_=WeightClassResult.EMPTY,
-    ).label("prediction")
+    wheel_prediction = (
+        case(
+            (loaded_score > empty_score, WeightClassResult.LOADED),
+            else_=WeightClassResult.EMPTY,
+        )
+        .cast(Enum(WeightClassResult, name="weightclassresult"))
+        .label("prediction")
+    )
 
     prediction = (
         select(

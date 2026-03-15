@@ -24,16 +24,11 @@ class WeightClassificationCreated(BaseMessage):
 
 class WeightClassificationMasked(BaseMessage):
     id: WeightClassId
+    vehicle_identifier: str
 
     @staticmethod
-    def key(id: WeightClassId) -> str:
-        return id.__str__()
-
-    @classmethod
-    def new(cls, id: WeightClassId, /) -> Self:
-        return cls(
-            id=id,
-        )
+    def key(vehicle_identifier: str) -> str:
+        return vehicle_identifier
 
 
 class WheelReadingCreated(BaseMessage):

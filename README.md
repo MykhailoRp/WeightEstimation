@@ -54,3 +54,10 @@ To run tests locally use
 {"text": "2026-02-25 18:38:34.072 | INFO     | logging:callHandlers:1762 - Application shutdown complete.\n", "record": {"elapsed": {"repr": "0:02:33.409434", "seconds": 153.409434}, "exception": null, "extra": {"service": "api"}, "file": {"name": "__init__.py", "path": "/usr/local/lib/python3.12/logging/__init__.py"}, "function": "callHandlers", "level": {"icon": "ℹ️", "name": "INFO", "no": 20}, "line": 1762, "message": "Application shutdown complete.", "module": "__init__", "name": "logging", "process": {"id": 11, "name": "SpawnProcess-1"}, "thread": {"id": 127159084788608, "name": "MainThread"}, "time": {"repr": "2026-02-25 18:38:34.072541+00:00", "timestamp": 1772044714.072541}}}
 {"text": "2026-02-25 18:38:34.072 | INFO     | logging:callHandlers:1762 - Finished server process [11]\n", "record": {"elapsed": {"repr": "0:02:33.409675", "seconds": 153.409675}, "exception": null, "extra": {"service": "api"}, "file": {"name": "__init__.py", "path": "/usr/local/lib/python3.12/logging/__init__.py"}, "function": "callHandlers", "level": {"icon": "ℹ️", "name": "INFO", "no": 20}, "line": 1762, "message": "Finished server process [11]", "module": "__init__", "name": "logging", "process": {"id": 11, "name": "SpawnProcess-1"}, "thread": {"id": 127159084788608, "name": "MainThread"}, "time": {"repr": "2026-02-25 18:38:34.072782+00:00", "timestamp": 1772044714.072782}}}
 ```
+
+
+# Help scripts in psql
+
+Get weight classification progress
+
+    select w_c.id, w_c.status, w_c.assigned, w_c.result, count(*) filter (where w_r.compression is null) as unprocessed, count(*) filter (where w_r.compression is not null) as processed from weight_classifications w_c join wheel_readings w_r on w_c.id = w_r.weight_class_id group by w_c.id;

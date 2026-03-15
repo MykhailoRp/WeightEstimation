@@ -12,7 +12,7 @@ import numpy.typing as npt
 import torch
 from PIL import Image
 from pydantic import BaseModel
-from sqlalchemy import UUID, Integer, String, column, func, update, values
+from sqlalchemy import UUID, Float, Integer, String, column, func, update, values
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from transformers import Sam2Model, Sam2Processor
 
@@ -149,7 +149,14 @@ class SamFeatureExtractor:
         masks_on_s3: Sequence[tuple[S3Key, S3Key]],
     ) -> None:
         update_batch = [
-            (r.weight_class_id, r.frame_id, r.id, WheelFeatures(rim=b.rim_bbx, tire=b.tire_bbx), *s3_masks)
+            (
+                r.weight_class_id,
+                r.frame_id,
+                r.id,
+                WheelFeatures(rim=b.rim_bbx, tire=b.tire_bbx),
+                WheelFeatures(rim=b.rim_bbx, tire=b.tire_bbx).get_compression(),
+                *s3_masks,
+            )
             for r, b, s3_masks in zip(requests, boxes, masks_on_s3, strict=True)
         ]
 
@@ -159,6 +166,7 @@ class SamFeatureExtractor:
                 column("frame_id", Integer),
                 column("id", Integer),
                 column("masked_features", PydanticJSONB(WheelFeatures)),
+                column("compression", Float),
                 column("rim_mask_key", String),
                 column("tire_mask_key", String),
             )
@@ -175,6 +183,7 @@ class SamFeatureExtractor:
             )
             .values(
                 masked_features=values_table.c.masked_features,
+                compression=values_table.c.compression,
                 data=WheelReadingTable.data
                 + func.jsonb_build_object(
                     "rim_mask_key",
@@ -192,11 +201,12 @@ class SamFeatureExtractor:
             commited_statuses = await try_set_weight_class_status(session, list({r.weight_class_id for r in requests}), WeightClassStatus.MASKS_EXTRACTED)
             await session.commit()
 
-        for weight_class_id in commited_statuses:
+        for weight_class in commited_statuses:
             await WeightClassificationMaskedTopic.send(
-                key=WeightClassificationMasked.key(weight_class_id),
+                key=WeightClassificationMasked.key(weight_class.vehicle_identifier),
                 value=WeightClassificationMasked(
-                    id=weight_class_id,
+                    id=weight_class.id,
+                    vehicle_identifier=weight_class.vehicle_identifier,
                 ).model_dump_json(),
             )
 
