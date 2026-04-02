@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from common.models.weight_class.wheel_aggregation import WheelAggregation
 from common.sql.tables.base import Base
-from common.sql.tables.weight_class import WeightClassificationTable
+from common.sql.tables.customer.weight_class import WeightClassificationTable
 from common.types import WeightClassId, WheelId
 
 

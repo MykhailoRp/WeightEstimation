@@ -23,7 +23,7 @@ from common.models.weight_class.weight_class import WeightClassStatus
 from common.models.weight_class.wheel_reading import WheelFeatures
 from common.s3.client import S3Client
 from common.sql.scripts.weight_class import try_set_weight_class_status
-from common.sql.tables.wheel_reading import WheelReadingTable
+from common.sql.tables import WheelReadingTable
 from common.sql.types.pydantic_type import PydanticJSONB
 from common.types import S3Key
 

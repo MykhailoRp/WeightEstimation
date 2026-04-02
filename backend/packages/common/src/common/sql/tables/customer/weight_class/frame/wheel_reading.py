@@ -1,11 +1,11 @@
-from typing import Any, Self
+from typing import Self
 
 from sqlalchemy import ForeignKeyConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from common.models.weight_class.wheel_reading import WheelFeatures, WheelReading, WheelReadingData
 from common.sql.tables.base import Base
-from common.sql.tables.frame import FrameTable
+from common.sql.tables.customer.weight_class.frame import FrameTable
 from common.sql.types.pydantic_type import PydanticJSONB
 from common.types import FrameId, WeightClassId, WheelId
 
@@ -24,7 +24,7 @@ class WheelReadingTable(Base):
 
     data: Mapped[WheelReadingData] = mapped_column(PydanticJSONB(WheelReadingData))
 
-    __table_args__: tuple[Any, ...] = (
+    __table_args__ = (
         ForeignKeyConstraint(
             [frame_id, weight_class_id],
             [FrameTable.id, FrameTable.weight_class_id],

@@ -5,11 +5,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from common.models.weight_class.frame import Frame
 from common.sql.tables.base import Base
-from common.sql.tables.weight_class import WeightClassificationTable
+from common.sql.tables.customer.weight_class import WeightClassificationTable
 from common.types import FrameId, S3Key, WeightClassId
 
 if TYPE_CHECKING:
-    from common.sql.tables.wheel_reading import WheelReadingTable
+    from common.sql.tables.customer.weight_class.frame.wheel_reading import WheelReadingTable
 
 
 class FrameTable(Base):

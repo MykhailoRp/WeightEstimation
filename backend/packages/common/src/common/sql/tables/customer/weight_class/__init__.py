@@ -1,16 +1,17 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Self
 
-from sqlalchemy import TIMESTAMP, func
+from sqlalchemy import TIMESTAMP, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from common.models.weight_class import WeightClassification, WeightClassResult, WeightClassStatus
 from common.sql.tables import Base
-from common.types import S3Key, WeightClassId
+from common.sql.tables.customer import CustomerTable
+from common.types import S3Key, UserId, WeightClassId
 
 if TYPE_CHECKING:
-    from common.sql.tables.frame import FrameTable
-    from common.sql.tables.wheel_aggregation import WheelAggregationTable
+    from common.sql.tables.customer.weight_class.frame import FrameTable
+    from common.sql.tables.customer.weight_class.wheel_aggregation import WheelAggregationTable
 
 
 class WeightClassificationTable(Base):
@@ -18,7 +19,7 @@ class WeightClassificationTable(Base):
 
     id: Mapped[WeightClassId] = mapped_column(primary_key=True)
     vehicle_identifier: Mapped[str]
-    # user_id: Mapped[UserId] = mapped_column(ForeignKey(UserTable.id)) # TODO: enable after implementing users
+    customer_id: Mapped[UserId] = mapped_column(ForeignKey(CustomerTable.id, name="customer_fk"))
     status: Mapped[WeightClassStatus]
     assigned: Mapped[WeightClassResult]
     result: Mapped[WeightClassResult | None]
@@ -29,10 +30,11 @@ class WeightClassificationTable(Base):
 
     video_key: Mapped[S3Key]
 
-    processing_cost: Mapped[float | None]
+    processing_cost: Mapped[float]
 
     # relationships
-    # created_by: Mapped[UserTable] = relationship(back_populates="weight_classifications")
+    customer: Mapped[CustomerTable] = relationship(back_populates="weight_classifications")
+
     frames: Mapped[list["FrameTable"]] = relationship(back_populates="weight_classification")
     wheel_aggregations: Mapped[list["WheelAggregationTable"]] = relationship(back_populates="weight_classification")
 

@@ -8,8 +8,7 @@ from sqlalchemy.orm import InstrumentedAttribute
 
 from common.models.weight_class import WeightClassStatus
 from common.models.weight_class.weight_class import WeightClassification
-from common.sql.tables.weight_class import WeightClassificationTable
-from common.sql.tables.wheel_reading import WheelReadingTable
+from common.sql.tables import WeightClassificationTable, WheelReadingTable
 from common.types import WeightClassId
 
 

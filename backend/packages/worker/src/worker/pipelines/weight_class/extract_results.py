@@ -8,9 +8,7 @@ from common.kafka.topics import WeightClassificationCompletedTopic
 from common.models.weight_class.weight_class import WeightClassResult, WeightClassStatus
 from common.models.weight_class.wheel_aggregation import WheelAggregation
 from common.sql.scripts.weight_class import cdf
-from common.sql.tables.weight_class import WeightClassificationTable
-from common.sql.tables.wheel_aggregation import WheelAggregationTable
-from common.sql.tables.wheel_reading import WheelReadingTable
+from common.sql.tables import WeightClassificationTable, WheelAggregationTable, WheelReadingTable
 from common.types import WeightClassId
 
 

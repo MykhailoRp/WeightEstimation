@@ -2,6 +2,7 @@ from typing import NewType
 from uuid import UUID
 
 UserId = NewType("UserId", UUID)
+InvoiceId = NewType("InvoiceId", UUID)
 WeightClassId = NewType("WeightClassId", UUID)
 FileId = NewType("FileId", UUID)
 FrameId = NewType("FrameId", int)

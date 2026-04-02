@@ -7,8 +7,7 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.models.weight_class import WeightClassification, WeightClassResult, WeightClassStatus, WheelAggregation
-from common.sql.tables import WeightClassificationTable
-from common.sql.tables.wheel_aggregation import WheelAggregationTable
+from common.sql.tables import WeightClassificationTable, WheelAggregationTable
 from common.types import S3Key, WeightClassId, WheelId
 from worker.pipelines.weight_class.extract_results import predict_result
 

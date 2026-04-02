@@ -17,8 +17,7 @@ from common.models.weight_class.weight_class import WeightClassStatus
 from common.models.weight_class.wheel_reading import WheelBBX, WheelReading
 from common.s3.client import S3Client
 from common.sql.scripts.weight_class import try_set_weight_class_status
-from common.sql.tables.frame import FrameTable
-from common.sql.tables.wheel_reading import WheelReadingTable
+from common.sql.tables import FrameTable, WheelReadingTable
 from common.types import FrameId, WeightClassId
 from worker.custom import Sort
 
