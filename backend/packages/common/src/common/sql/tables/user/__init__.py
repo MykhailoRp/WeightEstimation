@@ -1,9 +1,10 @@
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Self
 
 from sqlalchemy import text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from common.models.user import User
 from common.sql.tables.base import Base
 from common.types import UserId
 
@@ -22,3 +23,22 @@ class UserTable(Base):
 
     # relationships
     sessions: Mapped[list["SessionTable"]] = relationship(back_populates="user")
+
+    @classmethod
+    def new(cls, u: User, /) -> Self:
+        return cls(
+            id=u.id,
+            email=u.email,
+            email_verified=u.email_verified,
+            password_hash=u.password_hash,
+            created_at=u.created_at,
+        )
+
+    def m(self) -> User:
+        return User(
+            id=self.id,
+            email=self.email,
+            email_verified=self.email_verified,
+            password_hash=self.password_hash,
+            created_at=self.created_at,
+        )
