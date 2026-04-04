@@ -14,8 +14,8 @@ async def get_user_with_role(session: AsyncSession, *, id: UserId | None = None,
             AdminTable.id.isnot(None),
             CustomerTable.id.isnot(None),
         )
-        .join(AdminTable, onclause=UserTable.id == AdminTable.id)
-        .join(CustomerTable, onclause=UserTable.id == CustomerTable.id)
+        .join(AdminTable, onclause=UserTable.id == AdminTable.id, isouter=True)
+        .join(CustomerTable, onclause=UserTable.id == CustomerTable.id, isouter=True)
     )
 
     if id is not None:

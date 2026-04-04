@@ -14,5 +14,5 @@ class AdminTable(Base):
 
     # relationships
     user: Mapped[UserTable] = relationship(back_populates="admin")
-    promoted_by: Mapped["AdminTable"] = relationship(back_populates="promoted")
+    promoted_by: Mapped["AdminTable"] = relationship(back_populates="promoted", remote_side=[id])
     promoted: Mapped[list["AdminTable"]] = relationship(back_populates="promoted_by")

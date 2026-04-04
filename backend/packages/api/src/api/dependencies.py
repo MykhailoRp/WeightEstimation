@@ -49,7 +49,7 @@ def get_secrets_manager() -> _SecretsManager:
 SecretsManager = Annotated[_SecretsManager, Depends(get_secrets_manager)]
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
 
 def get_token_data(token: Annotated[str, Depends(oauth2_scheme)], secrets_manager: SecretsManager) -> _TokenData:

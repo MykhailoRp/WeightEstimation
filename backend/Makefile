@@ -44,3 +44,9 @@ sam2-checkpoints :
 	uv run hf download facebook/sam2.1-hiera-small --local-dir checkpoints/sam2
 
 checkpoints : sam2-checkpoints
+
+scripts/%: scripts/%.py
+	docker compose run -v ./$<:/workspace/$< -w /workspace api uv run $<
+
+psql:
+	docker compose exec db psql -U postgres

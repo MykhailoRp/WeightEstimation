@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Self
 
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import TIMESTAMP, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from common.models.user.session import Session
@@ -16,8 +16,8 @@ class SessionTable(Base):
     token: Mapped[str] = mapped_column(primary_key=True)
     user_id: Mapped[UserId] = mapped_column(ForeignKey(UserTable.id))
 
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    expire_at: Mapped[datetime]
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(True), server_default=func.now())
+    expire_at: Mapped[datetime] = mapped_column(TIMESTAMP(True))
 
     # relationships
     user: Mapped[UserTable] = relationship(back_populates="sessions")

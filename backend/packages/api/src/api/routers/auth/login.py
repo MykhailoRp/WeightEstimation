@@ -1,7 +1,8 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
+from loguru import logger
 
 from api.dependencies import DBSession, SecretsManager
 from api.models.auth import LoginResponse
@@ -16,7 +17,11 @@ async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session_maker: DBSession,
     secrets_manager: SecretsManager,
+    response: Response,
 ) -> LoginResponse:
+
+    logger.info("Requesting new session", email=form_data.username)
+
     async with session_maker() as session:
         user = await get_user_with_role(session, email=form_data.username)
 
@@ -33,4 +38,6 @@ async def login(
         session.add(SessionTable.new(new_session))
         await session.commit()
 
-    return LoginResponse(jwt_token=new_token, session=new_session.token)
+    response.headers["authorization"] = f"Bearer {new_token}"
+
+    return LoginResponse(access_token=new_token, session=new_session.token)
