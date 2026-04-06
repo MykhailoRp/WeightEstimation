@@ -1,12 +1,19 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.models.user import UserWithRole
 from common.sql.tables import AdminTable, CustomerTable, UserTable
+from common.sql.tables.user.session import SessionTable
 from common.types import UserId
 
 
-async def get_user_with_role(session: AsyncSession, *, id: UserId | None = None, email: str | None = None) -> UserWithRole | None:
+async def get_user_with_role(
+    session: AsyncSession,
+    *,
+    id: UserId | None = None,
+    email: str | None = None,
+    session_token: str | None = None,
+) -> UserWithRole | None:
 
     statement = (
         select(
@@ -23,6 +30,9 @@ async def get_user_with_role(session: AsyncSession, *, id: UserId | None = None,
 
     if email is not None:
         statement = statement.where(UserTable.email == email)
+
+    if session_token is not None:
+        statement = statement.join(SessionTable).where(SessionTable.token == session_token, SessionTable.expire_at > func.now())
 
     result = (await session.execute(statement)).one_or_none()
 
