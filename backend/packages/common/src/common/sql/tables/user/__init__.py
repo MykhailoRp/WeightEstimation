@@ -11,6 +11,7 @@ from common.types import UserId
 if TYPE_CHECKING:
     from common.sql.tables.admin import AdminTable
     from common.sql.tables.customer import CustomerTable
+    from common.sql.tables.user.otp import OTPTable
     from common.sql.tables.user.session import SessionTable
 
 
@@ -25,6 +26,7 @@ class UserTable(Base):
 
     # relationships
     sessions: Mapped[list["SessionTable"]] = relationship(back_populates="user")
+    one_time_passwords: Mapped[list["OTPTable"]] = relationship(back_populates="user")
     admin: Mapped["AdminTable"] = relationship(back_populates="user")
     customer: Mapped["CustomerTable"] = relationship(back_populates="user")
 

@@ -5,7 +5,7 @@ test :
 	docker compose -f docker-compose.test.yaml down -v --remove-orphans
 
 dev : 
-	docker compose up --build --remove-orphans
+	docker compose --env-file .env up --build --remove-orphans
 
 api : 
 	uv run uvicorn api.main:app --host localhost --port 8000 --reload
@@ -34,7 +34,7 @@ pre-commit : lint
 
 NAME ?=
 migrate : 
-	docker compose start db_setup
+	docker compose run db_setup
 
 migration : migrate
 	@test -n "$(NAME)" || { echo "NAME is required! Usage: make migration NAME=value"; exit 1; }

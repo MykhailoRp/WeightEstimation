@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from types import UnionType
 from typing import TYPE_CHECKING, Any, final, override
 
 import sqlalchemy as sa
@@ -47,7 +48,7 @@ class PydanticJSONB(sa.types.TypeDecorator):
     # impl variable can reference TypeEngine as a placeholder.
     impl = JSONB
 
-    def __init__(self, pydantic_type: type) -> None:
+    def __init__(self, pydantic_type: type | UnionType) -> None:
         super().__init__()
 
         # Wrap the type in a TypeAdapter, so that anything can be validated

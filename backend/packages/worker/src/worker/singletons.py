@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 from common.s3 import S3Client, StorageConfig
 from common.sql import DatabaseConfig
+from worker.email_sender.conf import EmailConfig
 from worker.pipelines.weight_class.extract_masks import SamFeatureExtractor
 
 DATABASE_CONFIG = DatabaseConfig()
@@ -23,3 +24,6 @@ def client_maker() -> S3Client:
 @lru_cache(maxsize=1)
 def feature_extractor_maker() -> SamFeatureExtractor:
     return SamFeatureExtractor()
+
+
+EMAIL_CONFIG = EmailConfig()

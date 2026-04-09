@@ -23,3 +23,9 @@ WheelReadingCreatedTopic = faust_app.topic(
     key_type=None,
     value_type=bytes,
 )
+
+EmailSendTopic = faust_app.topic(
+    "email.send",
+    key_type=None,
+    value_type=bytes,
+)
