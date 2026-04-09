@@ -11,3 +11,7 @@ class NewUserRequest(BaseModel):
 class ValidateUserRequest(BaseModel):
     user_id: UserId
     code: str
+
+
+class ValidateUserResponse(BaseModel):
+    pass

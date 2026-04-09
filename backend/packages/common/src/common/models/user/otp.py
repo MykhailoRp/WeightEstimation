@@ -36,9 +36,20 @@ class _ValidateUserGenerator(_ValidateEmailGenerator):
     pass
 
 
+class _ResetPasswordGenerator(_OPTGenerator):
+    @staticmethod
+    def get_password() -> str:
+        return secrets_choice(string.ascii_uppercase + string.digits, 12)
+
+    @staticmethod
+    def get_expire_at() -> datetime:
+        return datetime.now(tz=UTC) + timedelta(minutes=30)
+
+
 class OTPType(StrEnum):
     VALIDATE_USER = "VALIDATE_USER"
     VALIDATE_EMAIL = "VALIDATE_EMAIL"
+    RESET_PASSWORD = "RESET_PASSWORD"
 
 
 class _OTPData(BaseModel):
@@ -54,7 +65,11 @@ class ValidateEmailOTPData(_OTPData):
     new_email: str
 
 
-OTPData = Annotated[ValidateUserOTPData | ValidateEmailOTPData, Field(discriminator="type")]
+class ResetPasswordOTPData(_OTPData):
+    type: Literal[OTPType.RESET_PASSWORD] = OTPType.RESET_PASSWORD
+
+
+OTPData = Annotated[ValidateUserOTPData | ValidateEmailOTPData | ResetPasswordOTPData, Field(discriminator="type")]
 
 
 class OTP(ABC, BaseModel):
@@ -93,4 +108,18 @@ class ValidateEmailOTP(OTP):
         )
 
 
-AnyOTP = Annotated[ValidateUserOTP | ValidateEmailOTP, Field(discriminator="type")]
+class ResetPasswordOTP(OTP):
+    type: Literal[OTPType.RESET_PASSWORD] = OTPType.RESET_PASSWORD
+    data: ResetPasswordOTPData
+
+    @classmethod
+    def new(cls, user_id: UserId) -> Self:
+        return cls(
+            user_id=user_id,
+            password=_ResetPasswordGenerator.get_password(),
+            data=ResetPasswordOTPData(),
+            expire_at=_ResetPasswordGenerator.get_expire_at(),
+        )
+
+
+AnyOTP = Annotated[ValidateUserOTP | ValidateEmailOTP | ResetPasswordOTP, Field(discriminator="type")]

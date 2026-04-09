@@ -77,6 +77,7 @@ ignore = [
     "E501",   # line too long (handled by formatter)
     "B008",   # FastAPI dependency injection false positives
     "SIM108", # Use ternary operator instead of `if`-`else`-block
+    "SIM103", # Return the negated condition directly
 ]
 unfixable = ["F401"]
 

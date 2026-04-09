@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 
-from api.routers.users.user_id.weight_class import router as weight_class_router
+from api.routers.users.user_id.reset_email import router as reset_email_router
 
 router = APIRouter(prefix="/{user_id}")
 
-routers = [weight_class_router]
+routers = [reset_email_router]
 
 for r in routers:
     router.include_router(r)

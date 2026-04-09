@@ -33,7 +33,7 @@ def new_user(email: str, password_hash: str) -> User:
 class UserWithRole(User):
     role: set[UserRole]
 
-    def is_(self, *r: list[UserRole]) -> bool:
+    def is_(self, *r: UserRole) -> bool:
         return len(set(r).union(self.role)) > 0
 
 

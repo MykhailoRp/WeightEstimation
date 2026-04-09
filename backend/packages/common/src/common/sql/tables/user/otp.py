@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Self
 
 from sqlalchemy import TIMESTAMP, ForeignKey
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from common.models.user.otp import OTP, OTPData, OTPType
@@ -41,3 +43,7 @@ class OTPTable(Base):
             data=self.data,
             expire_at=self.expire_at,
         )
+
+
+async def insert_otp(session: AsyncSession, otp: OTPTable) -> None:
+    await session.execute(insert(OTPTable).values(otp.dict()).on_conflict_do_update(index_elements=[OTPTable.user_id, OTPTable.type], set_=otp.dict()))

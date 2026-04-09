@@ -12,6 +12,9 @@ class TokenData(BaseModel):
     email: str
     role: set[UserRole]
 
+    def is_(self, *r: UserRole) -> bool:
+        return len(set(r).union(self.role)) > 0
+
     @classmethod
     def new(cls, u: UserWithRole, /) -> Self:
         return cls(

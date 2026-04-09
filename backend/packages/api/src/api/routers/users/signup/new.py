@@ -11,7 +11,7 @@ from common.models.email.validate_email import ValidateEmailMessage
 from common.models.user import new_user
 from common.models.user.otp import ValidateUserOTP
 from common.sql.tables.user import UserTable
-from common.sql.tables.user.otp import OTPTable
+from common.sql.tables.user.otp import OTPTable, insert_otp
 
 router = APIRouter()
 
@@ -28,12 +28,9 @@ async def create_new_user(
     letter = ValidateEmailMessage.new(email_to=user.email, otp=otp.password)
 
     async with session_maker() as session:
-        session.add_all(
-            [
-                UserTable.new(user),
-                OTPTable.new(otp),
-            ],
-        )
+        session.add(UserTable.new(user))
+        await session.flush()
+        await insert_otp(session, OTPTable.new(otp))
         await session.commit()
 
     await EmailSendTopic.send(
