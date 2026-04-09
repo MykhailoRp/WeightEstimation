@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from loguru import logger
 from pydantic import ValidationError
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -53,26 +54,31 @@ async def get_user_with_role(
 
 
 async def validate_otp[T: OTP](session: AsyncSession, type: type[T], password: str, user_id: UserId | None = None, *, delete_after: bool) -> T | None:
-    statement: Select[tuple[OTPTable]] | ReturningDelete[tuple[OTPTable]]
-    if delete_after:
-        statement = delete(OTPTable).returning(OTPTable)
-    else:
-        statement = select(OTPTable)
+    with logger.contextualize(type=type, user_id=user_id, delete_after=delete_after):
+        logger.info("Validating OTP")
 
-    statement = statement.where(
-        OTPTable.password == password,
-        OTPTable.expire_at > func.now(),
-    )
+        statement: Select[tuple[OTPTable]] | ReturningDelete[tuple[OTPTable]]
+        if delete_after:
+            statement = delete(OTPTable).returning(OTPTable)
+        else:
+            statement = select(OTPTable)
 
-    if user_id is not None:
-        statement = statement.where(OTPTable.user_id == user_id)
+        statement = statement.where(
+            OTPTable.password == password,
+            OTPTable.expire_at > func.now(),
+        )
 
-    record = (await session.scalars(statement)).one_or_none()
+        if user_id is not None:
+            statement = statement.where(OTPTable.user_id == user_id)
 
-    if record is None:
-        return record
+        record = (await session.scalars(statement)).one_or_none()
 
-    try:
-        return type.model_validate(record.m())
-    except ValidationError:
-        return None
+        if record is None:
+            logger.warning("Did not find OTP")
+            return record
+
+        try:
+            return type.model_validate(record.m().model_dump())
+        except ValidationError:
+            logger.exception("Did not validate OTP")
+            return None

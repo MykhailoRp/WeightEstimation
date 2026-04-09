@@ -4,8 +4,10 @@ from fastapi import APIRouter, Body, HTTPException, status
 
 from api.dependencies import DBSession
 from api.models.user.signup import ValidateUserRequest
+from common.models.customer import Customer
 from common.models.user.otp import ValidateUserOTP
 from common.sql.scripts.getters import validate_otp
+from common.sql.tables import CustomerTable
 
 router = APIRouter()
 
@@ -17,9 +19,11 @@ async def create_new_user(
 ) -> None:
 
     async with session_maker() as session:
-        otp = validate_otp(session, ValidateUserOTP, request.code, request.user_id, delete_after=True)
+        otp = await validate_otp(session, ValidateUserOTP, request.code, request.user_id, delete_after=True)
 
         if otp is None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Expired or invalid code")
+
+        session.add(CustomerTable.new(Customer.new(otp.user_id)))
 
         await session.commit()
