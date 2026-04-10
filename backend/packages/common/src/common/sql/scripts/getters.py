@@ -43,14 +43,13 @@ async def get_user_with_role(
     if session_token is not None:
         statement = statement.join(SessionTable).where(SessionTable.token == session_token, SessionTable.expire_at > func.now())
 
-    result = (await session.execute(statement)).one_or_none()
+    result = (await session.execute(statement)).t.one_or_none()
 
     if result is None:
         return None
 
     user, is_admin, is_customer = result
-
-    return new_user_with_role(user, is_admin=is_admin, is_customer=is_customer)
+    return new_user_with_role(user.m(), is_admin=is_admin, is_customer=is_customer)
 
 
 async def validate_otp[T: OTP](session: AsyncSession, type: type[T], password: str, user_id: UserId | None = None, *, delete_after: bool) -> T | None:
