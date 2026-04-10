@@ -5,6 +5,7 @@ from pydantic import ValidationError
 from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from common.models.customer import Customer
 from common.models.user import UserWithRole, new_user_with_role
 from common.models.user.otp import OTP
 from common.sql.tables import AdminTable, CustomerTable, UserTable
@@ -50,6 +51,23 @@ async def get_user_with_role(
 
     user, is_admin, is_customer = result
     return new_user_with_role(user.m(), is_admin=is_admin, is_customer=is_customer)
+
+
+async def get_customer(session: AsyncSession, *, id: UserId | None = None) -> Customer | None:
+    statement = select(
+        CustomerTable,
+    )
+
+    if id is not None:
+        statement = statement.where(CustomerTable.id == id)
+
+    result = (await session.execute(statement)).t.one_or_none()
+
+    if result is None:
+        return None
+
+    (customer,) = result
+    return customer.m()
 
 
 async def validate_otp[T: OTP](session: AsyncSession, type: type[T], password: str, user_id: UserId | None = None, *, delete_after: bool) -> T | None:
