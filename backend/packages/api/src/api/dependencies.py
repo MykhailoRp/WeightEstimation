@@ -9,6 +9,7 @@ from api.auth import SecretsManager as _SecretsManager
 from api.auth import SessionConfig, TokenConfig
 from api.auth.exc import InvalidTokenError, TokenExpiredError
 from api.auth.models import TokenData as _TokenData
+from api.payments import InvoiceWrapper as _InvoiceWrapper
 from common.s3 import S3Client as _S3Client
 from common.s3 import StorageConfig
 from common.sql import DatabaseConfig
@@ -62,3 +63,6 @@ def get_token_data(token: Annotated[str, Depends(oauth2_scheme)], secrets_manage
 
 
 TokenData = Annotated[_TokenData, Depends(get_token_data)]
+
+
+InvoiceWrapper = Annotated[_InvoiceWrapper, Depends()]
