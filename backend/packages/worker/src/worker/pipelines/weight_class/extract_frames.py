@@ -105,7 +105,7 @@ def detect_circles(
     min_r: int = 70,
     max_r: int = -1,
 ) -> T_Circles:
-    gray = cv2.cvtColor(normalize_lighting(image), cv2.COLOR_RGB2GRAY)
+    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
     blurred = cv2.GaussianBlur(gray, (blur_k, blur_k), sigma)
 
     circles = cv2.HoughCircles(
@@ -336,6 +336,8 @@ async def extract_frames(
 
                 if frame_id % (skip_frame + 1) != 0:
                     continue
+
+                frame = normalize_lighting(frame.astype(np.uint8))
 
                 extracted_tires = extract_from_frame(frame=frame.astype(np.uint8), sort=sort)
 
