@@ -13,7 +13,7 @@ async def test_api_heakcheck_normal(alembic_headed: None) -> None:
 
     api_client = TestClient(app=app)
 
-    response = api_client.get("/health")
+    response = api_client.get("api/health")
 
     assert response.status_code == 200
 
@@ -28,6 +28,6 @@ async def test_api_heakcheck_failed(alembic_headed: None, monkeypatch: pytest.Mo
 
     api_client = TestClient(app=app)
 
-    response = api_client.get("/health")
+    response = api_client.get("api/health")
 
     assert response.status_code == 503

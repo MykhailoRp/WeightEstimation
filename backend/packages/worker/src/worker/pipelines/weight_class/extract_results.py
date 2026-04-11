@@ -130,6 +130,7 @@ async def predict_result(session: AsyncSession, vehicle_identifier: str, weight_
             confidance > 0.65,
             WheelAggregationTable.id.not_in([0]),  # ignore wheel under cabin
         )
+        .scalar_subquery()
     )
 
     statement = (

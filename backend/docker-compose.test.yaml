@@ -43,13 +43,15 @@ services:
       target: api_tests
     container_name: api_tests
     environment:
-      - SERVICE_NAME=api_tests
-      - POSTGRES_HOST=test_db
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=api_test
-      - POSTGRES_DRIVER=psycopg
+      SERVICE_NAME: api_tests
+      POSTGRES_HOST: test_db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: api_test
+      POSTGRES_DRIVER: psycopg
+
+      JWT_SECRET_KEY: 43dfd82aa0e69fda3397577c77462e5fe78717683ea675a13296989de2099ba8
     command: ["uv", "run", "pytest", "-vv"]
     depends_on:
       test_db:
@@ -62,13 +64,16 @@ services:
       target: worker_tests
     container_name: worker_tests
     environment:
-      - SERVICE_NAME=worker_tests
-      - POSTGRES_HOST=test_db
-      - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=worker_test
-      - POSTGRES_DRIVER=psycopg
+      SERVICE_NAME: worker_tests
+      POSTGRES_HOST: test_db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: worker_test
+      POSTGRES_DRIVER: psycopg
+
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      EMAIL_SYSTEM_ADDRESS: ${EMAIL_SYSTEM_ADDRESS}
     command: ["uv", "run", "pytest", "-vv"]
     depends_on:
       test_db:

@@ -14,6 +14,8 @@ class StorageConfig(BaseSettings):
 
     bucket: str = "main"
 
+    sign_expire_in_seconds: int = 3600  # 1 hour
+
     model_config = SettingsConfigDict(env_prefix="S3_")
 
     def get_uploads(self, file_id: FileId, /) -> S3Key:

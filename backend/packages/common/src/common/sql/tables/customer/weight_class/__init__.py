@@ -30,7 +30,7 @@ class WeightClassificationTable(Base):
 
     video_key: Mapped[S3Key]
 
-    processing_cost: Mapped[float]
+    processing_cost: Mapped[float | None]
 
     # relationships
     customer: Mapped[CustomerTable] = relationship(back_populates="weight_classifications")
@@ -41,6 +41,7 @@ class WeightClassificationTable(Base):
     def m(self) -> WeightClassification:
         return WeightClassification(
             id=self.id,
+            customer_id=self.customer_id,
             vehicle_identifier=self.vehicle_identifier,
             status=self.status,
             assigned=self.assigned,
@@ -56,6 +57,7 @@ class WeightClassificationTable(Base):
     def new(cls, model: WeightClassification, /) -> Self:
         return cls(
             id=model.id,
+            customer_id=model.customer_id,
             vehicle_identifier=model.vehicle_identifier,
             status=model.status,
             assigned=model.assigned,

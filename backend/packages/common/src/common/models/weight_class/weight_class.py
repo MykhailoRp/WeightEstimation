@@ -3,7 +3,7 @@ from enum import StrEnum
 
 from pydantic import BaseModel
 
-from common.types import S3Key, WeightClassId
+from common.types import S3Key, UserId, WeightClassId
 
 
 class WeightClassStatus(StrEnum):
@@ -22,7 +22,7 @@ class WeightClassResult(StrEnum):
 class WeightClassification(BaseModel):
     id: WeightClassId
     vehicle_identifier: str
-    # user_id: UserId  # TODO: enable after implementing users
+    customer_id: UserId
     status: WeightClassStatus
     assigned: WeightClassResult
     result: WeightClassResult | None

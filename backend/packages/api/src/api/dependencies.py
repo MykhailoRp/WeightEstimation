@@ -56,7 +56,7 @@ def get_token_data(token: Annotated[str, Depends(oauth2_scheme)], secrets_manage
     try:
         return secrets_manager.decode_token(token)
     except TokenExpiredError as e:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Token expired", headers={"WWW-Authenticate": "Bearer"}) from e
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired", headers={"WWW-Authenticate": "Bearer"}) from e
     except InvalidTokenError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token", headers={"WWW-Authenticate": "Bearer"}) from e
 

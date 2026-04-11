@@ -8,13 +8,29 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.models.bounding_box import BoundingBox
+from common.models.customer import Customer
+from common.models.user import User
 from common.models.weight_class import Frame, WeightClassification, WeightClassResult, WeightClassStatus, WheelFeatures, WheelReading, WheelReadingData
 from common.sql.scripts.weight_class import try_set_weight_class_status
-from common.sql.tables import FrameTable, WeightClassificationTable, WheelReadingTable
-from common.types import FrameId, S3Key, WeightClassId, WheelId
+from common.sql.tables import CustomerTable, FrameTable, UserTable, WeightClassificationTable, WheelReadingTable
+from common.types import FrameId, S3Key, UserId, WeightClassId, WheelId
+
+user = User(
+    id=UserId(uuid.UUID(int=1)),
+    email="-",
+    email_verified=True,
+    password_hash="-",
+    created_at=datetime.now(tz=UTC),
+)
+
+customer = Customer(
+    id=user.id,
+    funds=0,
+)
 
 completed_class = WeightClassification(
     id=WeightClassId(uuid.UUID("00000000-0000-0000-0000-000000000001")),
+    customer_id=customer.id,
     vehicle_identifier="1",
     status=WeightClassStatus.FRAMES_SPLIT,
     assigned=WeightClassResult.EMPTY,
@@ -28,6 +44,7 @@ completed_class = WeightClassification(
 
 uncompleted_class = WeightClassification(
     id=WeightClassId(uuid.UUID("00000000-0000-0000-0000-000000000002")),
+    customer_id=customer.id,
     vehicle_identifier="2",
     status=WeightClassStatus.FRAMES_SPLIT,
     assigned=WeightClassResult.EMPTY,
@@ -86,6 +103,8 @@ async def module_session(session_session: AsyncSession) -> AsyncGenerator[AsyncS
     async with session_session.begin_nested() as nested:
         session_session.add_all(
             [
+                UserTable.new(user),
+                CustomerTable.new(customer),
                 WeightClassificationTable.new(completed_class),
                 WeightClassificationTable.new(uncompleted_class),
                 FrameTable.new(completed_frame),

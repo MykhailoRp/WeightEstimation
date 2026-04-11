@@ -1,28 +1,30 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Body, Path
+from fastapi import APIRouter, Body, HTTPException, status
 
-from api.dependencies import DBSession, S3Client
-from api.models.weight_class import NewWeightClassification
+from api.dependencies import DBSession, S3Client, TokenData
+from api.models.weight_class import WeightClassificationResponse
+from api.models.weight_class.new import NewWeightClassification
 from common.kafka.messages.weight_class import WeightClassificationCreated
 from common.kafka.topics import WeightClassificationCreatedTopic
-from common.models.weight_class import WeightClassification
+from common.models.user import UserRole
 from common.sql.tables import WeightClassificationTable
-from common.types import UserId
 
 router = APIRouter()
 
 
 @router.post("/", status_code=200, operation_id="Create New Weight Classification")
 async def create_weight_classification(
-    user_id: Annotated[UserId, Path()],
     request: Annotated[NewWeightClassification, Body()],
     session_maker: DBSession,
+    token_data: TokenData,
     s3_client: S3Client,
-) -> WeightClassification:
+) -> WeightClassificationResponse:
+
+    if token_data.id != request.customer_id and not token_data.is_(UserRole.ADMIN):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cant upload on behalf of this user")
 
     result = request.create(
-        user_id=user_id,
         video_key=s3_client.config.get_weight_class_video,
     )
 
@@ -43,4 +45,7 @@ async def create_weight_classification(
         value=WeightClassificationCreated.new(result).model_dump_json(),
     )
 
-    return result
+    return WeightClassificationResponse.new(
+        result,
+        await s3_client.sign_url(result.video_key),
+    )

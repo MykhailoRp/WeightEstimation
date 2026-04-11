@@ -14,7 +14,7 @@ import types_aiobotocore_s3 as boto_types
 from aiobotocore.session import ClientCreatorContext as _ClientCreatorContext
 
 from common.s3.config import StorageConfig
-from common.types import FileId, S3Key
+from common.types import FileId, S3Key, S3Url
 
 if TYPE_CHECKING:
     ClientCreatorContext = _ClientCreatorContext[boto_types.S3Client]
@@ -109,3 +109,16 @@ class S3Client:
                 await asyncio.gather(
                     *[client.upload_file(str(file), self.config.bucket, os.path.join(to, file.relative_to(directory))) for file in file_batch],
                 )
+
+    async def sign_url(self, key: S3Key) -> S3Url:
+        async with self.client() as client:
+            return S3Url(
+                await client.generate_presigned_url(
+                    ClientMethod="get_object",
+                    Params={
+                        "Bucket": self.config.bucket,
+                        "Key": key,
+                    },
+                    ExpiresIn=self.config.sign_expire_in_seconds,
+                ),
+            )

@@ -8,10 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from common.models.customer import Customer
 from common.models.user import UserWithRole, new_user_with_role
 from common.models.user.otp import OTP
-from common.sql.tables import AdminTable, CustomerTable, UserTable
-from common.sql.tables.user.otp import OTPTable
-from common.sql.tables.user.session import SessionTable
-from common.types import UserId
+from common.models.weight_class.weight_class import WeightClassification
+from common.sql.tables import AdminTable, CustomerTable, OTPTable, SessionTable, UserTable, WeightClassificationTable
+from common.types import UserId, WeightClassId
 
 if TYPE_CHECKING:
     from sqlalchemy.sql.dml import ReturningDelete, Select
@@ -68,6 +67,40 @@ async def get_customer(session: AsyncSession, *, id: UserId | None = None) -> Cu
 
     (customer,) = result
     return customer.m()
+
+
+async def get_weight_classifications(
+    session: AsyncSession,
+    *,
+    id: WeightClassId | None = None,
+    customer_id: UserId | None = None,
+    limit: int | None = None,
+    offset: int | None = None,
+) -> list[WeightClassification]:
+    statement = select(
+        WeightClassificationTable,
+    )
+
+    if id is not None:
+        statement = statement.where(WeightClassificationTable.id == id)
+
+    if customer_id is not None:
+        statement = statement.where(WeightClassificationTable.customer_id == customer_id)
+
+    if limit is not None:
+        statement = statement.limit(limit)
+    if offset is not None:
+        statement = statement.offset(offset)
+
+    result = await session.scalars(statement)
+
+    return [r.m() for r in result]
+
+
+async def get_weight_classification(session: AsyncSession, *, id: WeightClassId | None, customer_id: UserId | None) -> WeightClassification | None:
+    weight_classifications = await get_weight_classifications(session, id=id, customer_id=customer_id, limit=1)
+
+    return weight_classifications[0] if len(weight_classifications) == 1 else None
 
 
 async def validate_otp[T: OTP](session: AsyncSession, type: type[T], password: str, user_id: UserId | None = None, *, delete_after: bool) -> T | None:
