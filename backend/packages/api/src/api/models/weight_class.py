@@ -38,6 +38,32 @@ class NewWeightClassification(BaseModel):
         )
 
 
+class PublicNewWeightClassification(BaseModel):
+    file_id: FileId
+
+    vehicle_identifier: str
+    assigned: WeightClassResult
+
+    def create(self, customer_id: UserId, video_key: Callable[[WeightClassId], S3Key]) -> WeightClassification:
+
+        now = datetime.now(tz=UTC)
+        id_ = WeightClassId(uuid.uuid4())
+
+        return WeightClassification(
+            id=id_,
+            customer_id=customer_id,
+            vehicle_identifier=self.vehicle_identifier,
+            status=WeightClassStatus.PENDING,
+            assigned=self.assigned,
+            result=None,
+            created_at=now,
+            updated_at=now,
+            finished_at=None,
+            video_key=video_key(id_),
+            processing_cost=None,
+        )
+
+
 class WeightClassificationResponse(BaseModel):
     id: WeightClassId
     vehicle_identifier: str

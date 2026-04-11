@@ -2,20 +2,23 @@ import secrets
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
+from fastapi import Depends, HTTPException, Security, status
+from fastapi.security import APIKeyHeader, HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from api.auth import SecretsManager as _SecretsManager
 from api.auth import SessionConfig, TokenConfig
 from api.auth.conf import ApiTokenConfig
 from api.auth.exc import InvalidTokenError, TokenExpiredError
+from api.auth.models import ApiUser as _ApiUser
 from api.auth.models import TokenData as _TokenData
 from api.conf import ApiDocConfig
 from api.payments import InvoiceWrapper as _InvoiceWrapper
 from common.s3 import S3Client as _S3Client
 from common.s3 import StorageConfig
 from common.sql import DatabaseConfig
+from common.sql.tables import ApiTokenTable
 
 DATABASE_CONFIG = DatabaseConfig()
 
@@ -54,7 +57,7 @@ def get_secrets_manager() -> _SecretsManager:
 SecretsManager = Annotated[_SecretsManager, Depends(get_secrets_manager)]
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/internal/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/internal/auth/login")
 
 
 def get_token_data(token: Annotated[str, Depends(oauth2_scheme)], secrets_manager: SecretsManager) -> _TokenData:
@@ -85,3 +88,22 @@ def docs_authenticate(credentials: HTTPBasicCredentials = Depends(HTTPBasic())) 
             headers={"WWW-Authenticate": "Basic"},
         )
     return credentials.username
+
+
+api_token = APIKeyHeader(name="X-API-Key")
+
+
+async def get_public_api_user(session_maker: DBSession, token: str = Security(api_token)) -> _ApiUser:
+
+    async with session_maker() as session:
+        customer_id = await session.scalar(select(ApiTokenTable.customer_id).where(ApiTokenTable.token == token))
+
+    if customer_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid API key",
+        )
+    return _ApiUser(customer_id=customer_id)
+
+
+ApiUser = Annotated[_ApiUser, Depends(get_public_api_user)]

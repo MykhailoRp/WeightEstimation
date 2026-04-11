@@ -14,7 +14,7 @@ import types_aiobotocore_s3 as boto_types
 from aiobotocore.session import ClientCreatorContext as _ClientCreatorContext
 
 from common.s3.config import StorageConfig
-from common.types import FileId, S3Key, S3Url
+from common.types import FileId, S3Key, S3Url, UserId
 
 if TYPE_CHECKING:
     ClientCreatorContext = _ClientCreatorContext[boto_types.S3Client]
@@ -44,10 +44,10 @@ class S3Client:
             with suppress(client.exceptions.BucketAlreadyExists):
                 await client.create_bucket(Bucket=self.config.bucket)
 
-    async def new_upload(self, b: BinaryIO, /) -> FileId:
+    async def new_upload(self, b: BinaryIO, /, uploader: UserId) -> FileId:
         file_id = FileId(uuid.uuid4())
         async with self.client() as client:
-            await client.upload_fileobj(b, self.config.bucket, self.config.get_uploads(file_id))
+            await client.upload_fileobj(b, self.config.bucket, self.config.get_uploads(uploader, file_id))
 
         return file_id
 
@@ -55,13 +55,17 @@ class S3Client:
         async with self.client() as client:
             await client.delete_object(Bucket=self.config.bucket, Key=key)
 
-    async def delete_upload(self, file_id: FileId, /) -> None:
+    async def delete_upload(self, file_id: FileId, /, uploader: UserId) -> None:
         async with self.client() as client:
-            await client.delete_object(Bucket=self.config.bucket, Key=self.config.get_uploads(file_id))
+            await client.delete_object(Bucket=self.config.bucket, Key=self.config.get_uploads(uploader, file_id))
 
-    async def move_from_uploads(self, file_id: FileId, to: S3Key) -> None:
+    async def move_from_uploads(self, uploader: UserId, file_id: FileId, to: S3Key) -> None:
         async with self.client() as client:
-            await client.copy_object(Bucket=self.config.bucket, CopySource={"Bucket": self.config.bucket, "Key": self.config.get_uploads(file_id)}, Key=to)
+            await client.copy_object(
+                Bucket=self.config.bucket,
+                CopySource={"Bucket": self.config.bucket, "Key": self.config.get_uploads(uploader, file_id)},
+                Key=to,
+            )
 
     @asynccontextmanager
     async def file(self, key: S3Key, /) -> AsyncGenerator[_TemporaryFileWrapper, None]:

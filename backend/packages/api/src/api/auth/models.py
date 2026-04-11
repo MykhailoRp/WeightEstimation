@@ -34,3 +34,7 @@ class Token(BaseModel):
             expire_at=datetime.now(tz=UTC) + timedelta(minutes=expire_in_minutes),
             data=TokenData.new(user),
         )
+
+
+class ApiUser(BaseModel):
+    customer_id: UserId

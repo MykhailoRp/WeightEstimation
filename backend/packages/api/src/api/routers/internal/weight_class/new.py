@@ -27,7 +27,7 @@ async def create_weight_classification(
         video_key=s3_client.config.get_weight_class_video,
     )
 
-    await s3_client.move_from_uploads(file_id=request.file_id, to=result.video_key)
+    await s3_client.move_from_uploads(uploader=token_data.id, file_id=request.file_id, to=result.video_key)
 
     try:
         async with session_maker() as session:
@@ -37,7 +37,7 @@ async def create_weight_classification(
         await s3_client.delete_object(result.video_key)
         raise
     else:
-        await s3_client.delete_upload(request.file_id)
+        await s3_client.delete_upload(request.file_id, uploader=token_data.id)
 
     await WeightClassificationCreatedTopic.send(
         key=WeightClassificationCreated.key(result.id),

@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from common.types import FileId, FrameId, S3Key, WeightClassId, WheelId
+from common.types import FileId, FrameId, S3Key, UserId, WeightClassId, WheelId
 
 
 class StorageConfig(BaseSettings):
@@ -18,8 +18,8 @@ class StorageConfig(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix="S3_")
 
-    def get_uploads(self, file_id: FileId, /) -> S3Key:
-        return S3Key(f"uploads/{file_id}")
+    def get_uploads(self, uploader: UserId, file_id: FileId, /) -> S3Key:
+        return S3Key(f"uploads/{uploader}/{file_id}")
 
     def get_weight_class_video(self, weight_class_id: WeightClassId, /) -> S3Key:
         return S3Key(f"weight_classification/{weight_class_id}/video")

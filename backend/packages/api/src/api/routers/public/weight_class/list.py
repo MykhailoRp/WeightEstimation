@@ -3,9 +3,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
-from api.dependencies import DBSession, TokenData
+from api.dependencies import ApiUser, DBSession
 from api.models.weight_class import WeightClassificationListRequest, WeightClassificationListResponse
-from common.models.user import UserRole
 from common.sql.scripts.getters import count_weight_classifications
 from common.sql.scripts.getters import get_weight_classifications as get_weight_classifications_script
 
@@ -16,20 +15,20 @@ router = APIRouter()
 async def get_weight_classifications(
     query: Annotated[WeightClassificationListRequest, Query()],
     session_maker: DBSession,
-    token_data: TokenData,
+    token_data: ApiUser,
 ) -> WeightClassificationListResponse:
 
     async with session_maker() as session:
         classifications, total = await asyncio.gather(
             get_weight_classifications_script(
                 session,
-                customer_ids=query.customer_ids if token_data.is_(UserRole.ADMIN) else [token_data.id],
+                customer_ids=[token_data.customer_id],
                 limit=query.size,
                 offset=query.offset,
             ),
             count_weight_classifications(
                 session,
-                customer_ids=query.customer_ids if token_data.is_(UserRole.ADMIN) else [token_data.id],
+                customer_ids=[token_data.customer_id],
             ),
         )
 
