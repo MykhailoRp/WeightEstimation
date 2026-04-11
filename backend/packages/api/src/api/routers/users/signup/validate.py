@@ -14,7 +14,7 @@ router = APIRouter()
 
 
 @router.post("/validate", status_code=200, operation_id="Validate New User")
-async def create_new_user(
+async def validate_new_user(
     request: Annotated[ValidateUserRequest, Body()],
     session_maker: DBSession,
 ) -> ValidateUserResponse:

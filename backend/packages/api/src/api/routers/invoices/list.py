@@ -1,11 +1,39 @@
-from fastapi import APIRouter
+import asyncio
+from typing import Annotated
 
-from api.routers.users.user_id.details import router as details_router
-from api.routers.users.user_id.reset_email import router as reset_email_router
+from fastapi import APIRouter, Query
 
-router = APIRouter(prefix="/{user_id}")
+from api.dependencies import DBSession, TokenData
+from api.models.invoice import InvoiceListRequest, InvoiceListResponse
+from common.models.user import UserRole
+from common.sql.scripts.invoice import count_invoices
+from common.sql.scripts.invoice import get_invoices as get_invoices_script
 
-routers = [reset_email_router, details_router]
+router = APIRouter()
 
-for r in routers:
-    router.include_router(r)
+
+@router.get("/", status_code=200, operation_id="Get Invoices List")
+async def get_invoices(
+    query: Annotated[InvoiceListRequest, Query()],
+    session_maker: DBSession,
+    token_data: TokenData,
+) -> InvoiceListResponse:
+
+    async with session_maker() as session:
+        classifications, total = await asyncio.gather(
+            get_invoices_script(
+                session,
+                customer_ids=query.customer_ids if token_data.is_(UserRole.ADMIN) else [token_data.id],
+                limit=query.size,
+                offset=query.offset,
+            ),
+            count_invoices(
+                session,
+                customer_ids=query.customer_ids if token_data.is_(UserRole.ADMIN) else [token_data.id],
+            ),
+        )
+
+    return InvoiceListResponse.new(
+        classifications,
+        total,
+    )

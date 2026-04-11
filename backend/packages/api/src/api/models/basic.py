@@ -19,3 +19,8 @@ class Paginated(BaseModel):
     @property
     def offset(self) -> int:
         return self.page * self.size
+
+
+class ListResponse[T: BaseModel](BaseModel):
+    items: list[T]
+    total_count: int

@@ -5,7 +5,7 @@ from typing import Self
 
 from pydantic import BaseModel
 
-from api.models.basic import Paginated
+from api.models.basic import ListResponse, Paginated
 from common.models.weight_class.weight_class import WeightClassification, WeightClassResult, WeightClassStatus
 from common.types import FileId, S3Key, S3Url, UserId, WeightClassId
 
@@ -103,10 +103,7 @@ class WeightClassificationListRequest(Paginated):
     customer_ids: list[UserId] | None = None
 
 
-class WeightClassificationListResponse(BaseModel):
-    items: list[WeightClassificationItem]
-    total_count: int
-
+class WeightClassificationListResponse(ListResponse[WeightClassificationItem]):
     @classmethod
     def new(cls, m: list[WeightClassification], total_count: int) -> Self:
         return cls(

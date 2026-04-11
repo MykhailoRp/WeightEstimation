@@ -16,7 +16,7 @@ from common.sql.tables.user.otp import OTPTable, insert_otp
 router = APIRouter()
 
 
-@router.post("/", status_code=200, operation_id="Create New User")
+@router.post("/", status_code=200, operation_id="New User")
 async def create_new_user(
     request: Annotated[NewUserRequest, Body()],
     session_maker: DBSession,

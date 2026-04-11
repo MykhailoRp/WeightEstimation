@@ -13,7 +13,7 @@ router = APIRouter()
 
 
 @router.post("/", status_code=200, operation_id="Create New Invoice")
-async def new_transaction(
+async def new_invoice(
     request: Annotated[NewInvoiceRequest, Body()],
     session_maker: DBSession,
     invoice_wrapper: InvoiceWrapper,

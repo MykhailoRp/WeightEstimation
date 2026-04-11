@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any
 
 from loguru import logger
 from pydantic import ValidationError
-from sqlalchemy import delete, func, select
+from sqlalchemy import Select, delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from common.models.customer import Customer
@@ -13,7 +13,7 @@ from common.sql.tables import AdminTable, CustomerTable, OTPTable, SessionTable,
 from common.types import UserId, WeightClassId
 
 if TYPE_CHECKING:
-    from sqlalchemy.sql.dml import ReturningDelete, Select
+    from sqlalchemy.sql.dml import ReturningDelete
 
 
 async def get_user_with_role(
