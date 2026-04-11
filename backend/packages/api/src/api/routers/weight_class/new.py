@@ -3,8 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, HTTPException, status
 
 from api.dependencies import DBSession, S3Client, TokenData
-from api.models.weight_class import WeightClassificationResponse
-from api.models.weight_class.new import NewWeightClassification
+from api.models.weight_class import NewWeightClassification, WeightClassificationResponse
 from common.kafka.messages.weight_class import WeightClassificationCreated
 from common.kafka.topics import WeightClassificationCreatedTopic
 from common.models.user import UserRole

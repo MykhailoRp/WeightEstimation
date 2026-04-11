@@ -5,6 +5,7 @@ from typing import Self
 
 from pydantic import BaseModel
 
+from api.models.basic import Paginated
 from common.models.weight_class.weight_class import WeightClassification, WeightClassResult, WeightClassStatus
 from common.types import FileId, S3Key, S3Url, UserId, WeightClassId
 
@@ -67,4 +68,48 @@ class WeightClassificationResponse(BaseModel):
             finished_at=m.finished_at,
             video_url=signed_url,
             processing_cost=m.processing_cost,
+        )
+
+
+class WeightClassificationItem(BaseModel):
+    id: WeightClassId
+    vehicle_identifier: str
+    customer_id: UserId
+    status: WeightClassStatus
+    result: WeightClassResult | None
+
+    created_at: datetime
+    updated_at: datetime
+    finished_at: datetime | None
+
+    processing_cost: float | None
+
+    @classmethod
+    def new(cls, m: WeightClassification) -> Self:
+        return cls(
+            id=m.id,
+            vehicle_identifier=m.vehicle_identifier,
+            customer_id=m.customer_id,
+            status=m.status,
+            result=m.result,
+            created_at=m.created_at,
+            updated_at=m.updated_at,
+            finished_at=m.finished_at,
+            processing_cost=m.processing_cost,
+        )
+
+
+class WeightClassificationListRequest(Paginated):
+    customer_ids: list[UserId] | None = None
+
+
+class WeightClassificationListResponse(BaseModel):
+    items: list[WeightClassificationItem]
+    total_count: int
+
+    @classmethod
+    def new(cls, m: list[WeightClassification], total_count: int) -> Self:
+        return cls(
+            items=[WeightClassificationItem.new(m_) for m_ in m],
+            total_count=total_count,
         )

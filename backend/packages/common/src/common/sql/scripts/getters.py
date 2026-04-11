@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from loguru import logger
 from pydantic import ValidationError
@@ -69,28 +69,66 @@ async def get_customer(session: AsyncSession, *, id: UserId | None = None) -> Cu
     return customer.m()
 
 
+def apply_weight_classification_filter[T: tuple[Any, ...]](
+    statement: Select[T],
+    *,
+    id: WeightClassId | None,
+    customer_ids: list[UserId] | None,
+    limit: int | None,
+    offset: int | None,
+) -> Select[T]:
+    if id is not None:
+        statement = statement.where(WeightClassificationTable.id == id)
+
+    if customer_ids is not None:
+        statement = statement.where(WeightClassificationTable.customer_id.in_(customer_ids))
+
+    if limit is not None:
+        statement = statement.limit(limit)
+
+    if offset is not None:
+        statement = statement.offset(offset)
+
+    return statement
+
+
+async def count_weight_classifications(
+    session: AsyncSession,
+    *,
+    customer_ids: list[UserId] | None = None,
+) -> int:
+    statement = apply_weight_classification_filter(
+        select(
+            func.count(),
+        ).select_from(WeightClassificationTable),
+        id=None,
+        customer_ids=customer_ids,
+        limit=None,
+        offset=None,
+    )
+
+    result = await session.scalar(statement)
+
+    return result or 0
+
+
 async def get_weight_classifications(
     session: AsyncSession,
     *,
     id: WeightClassId | None = None,
-    customer_id: UserId | None = None,
+    customer_ids: list[UserId] | None = None,
     limit: int | None = None,
     offset: int | None = None,
 ) -> list[WeightClassification]:
-    statement = select(
-        WeightClassificationTable,
+    statement = apply_weight_classification_filter(
+        select(
+            WeightClassificationTable,
+        ),
+        id=id,
+        customer_ids=customer_ids,
+        limit=limit,
+        offset=offset,
     )
-
-    if id is not None:
-        statement = statement.where(WeightClassificationTable.id == id)
-
-    if customer_id is not None:
-        statement = statement.where(WeightClassificationTable.customer_id == customer_id)
-
-    if limit is not None:
-        statement = statement.limit(limit)
-    if offset is not None:
-        statement = statement.offset(offset)
 
     result = await session.scalars(statement)
 
@@ -98,7 +136,7 @@ async def get_weight_classifications(
 
 
 async def get_weight_classification(session: AsyncSession, *, id: WeightClassId | None, customer_id: UserId | None) -> WeightClassification | None:
-    weight_classifications = await get_weight_classifications(session, id=id, customer_id=customer_id, limit=1)
+    weight_classifications = await get_weight_classifications(session, id=id, customer_ids=[customer_id] if customer_id else None, limit=1)
 
     return weight_classifications[0] if len(weight_classifications) == 1 else None
 

@@ -10,3 +10,12 @@ class HealthCheck(BaseModel):
 
 class FileRespose(BaseModel):
     file_id: FileId
+
+
+class Paginated(BaseModel):
+    page: int = 0
+    size: int = 10
+
+    @property
+    def offset(self) -> int:
+        return self.page * self.size
