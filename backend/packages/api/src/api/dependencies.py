@@ -1,8 +1,9 @@
+import secrets
 from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPBasic, HTTPBasicCredentials, OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from api.auth import SecretsManager as _SecretsManager
@@ -10,6 +11,7 @@ from api.auth import SessionConfig, TokenConfig
 from api.auth.conf import ApiTokenConfig
 from api.auth.exc import InvalidTokenError, TokenExpiredError
 from api.auth.models import TokenData as _TokenData
+from api.conf import ApiDocConfig
 from api.payments import InvoiceWrapper as _InvoiceWrapper
 from common.s3 import S3Client as _S3Client
 from common.s3 import StorageConfig
@@ -68,3 +70,18 @@ TokenData = Annotated[_TokenData, Depends(get_token_data)]
 
 
 InvoiceWrapper = Annotated[_InvoiceWrapper, Depends()]
+
+
+DOC_CONFIG = ApiDocConfig()
+
+
+def docs_authenticate(credentials: HTTPBasicCredentials = Depends(HTTPBasic())) -> str:
+    correct_username = secrets.compare_digest(credentials.username, DOC_CONFIG.username)
+    correct_password = secrets.compare_digest(credentials.password, DOC_CONFIG.password)
+    if not (correct_username and correct_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return credentials.username
