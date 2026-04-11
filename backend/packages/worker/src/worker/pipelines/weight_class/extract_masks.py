@@ -206,6 +206,7 @@ class SamFeatureExtractor:
                 key=WeightClassificationMasked.key(weight_class.vehicle_identifier),
                 value=WeightClassificationMasked(
                     id=weight_class.id,
+                    customer_id=weight_class.customer_id,
                     vehicle_identifier=weight_class.vehicle_identifier,
                 ).model_dump_json(),
             )

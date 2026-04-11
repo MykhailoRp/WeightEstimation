@@ -3,7 +3,7 @@ from typing import Self
 from common.kafka.messages import BaseMessage
 from common.models.weight_class import WeightClassification
 from common.models.weight_class.wheel_reading import WheelFeatures, WheelReading
-from common.types import FrameId, S3Key, WeightClassId, WheelId
+from common.types import FrameId, S3Key, UserId, WeightClassId, WheelId
 
 
 class WeightClassificationCreated(BaseMessage):
@@ -24,6 +24,7 @@ class WeightClassificationCreated(BaseMessage):
 
 class WeightClassificationMasked(BaseMessage):
     id: WeightClassId
+    customer_id: UserId
     vehicle_identifier: str
 
     @staticmethod

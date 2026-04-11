@@ -9,7 +9,7 @@ from common.models.weight_class.weight_class import WeightClassResult, WeightCla
 from common.models.weight_class.wheel_aggregation import WheelAggregation
 from common.sql.scripts.weight_class import cdf
 from common.sql.tables import WeightClassificationTable, WheelAggregationTable, WheelReadingTable
-from common.types import WeightClassId
+from common.types import UserId, WeightClassId
 
 
 async def preclean_aggregations(
@@ -76,7 +76,13 @@ async def generate_aggregations(
     return [r.m() for r in results]
 
 
-async def predict_result(session: AsyncSession, vehicle_identifier: str, weight_class_id: WeightClassId, default_std: float = 0.05) -> WeightClassResult | None:
+async def predict_result(
+    session: AsyncSession,
+    vehicle_identifier: str,
+    weight_class_id: WeightClassId,
+    customer_id: UserId,
+    default_std: float = 0.05,
+) -> WeightClassResult | None:
     label = func.coalesce(WeightClassificationTable.result, WeightClassificationTable.assigned).label("label")
 
     loaded_mean = func.avg(WheelAggregationTable.median).filter(label == WeightClassResult.LOADED)
@@ -100,7 +106,11 @@ async def predict_result(session: AsyncSession, vehicle_identifier: str, weight_
             safe_empty_mean,
             safe_empty_std,
         )
-        .where(WeightClassificationTable.id != weight_class_id, WeightClassificationTable.vehicle_identifier == vehicle_identifier)
+        .where(
+            WeightClassificationTable.id != weight_class_id,
+            WeightClassificationTable.customer_id == customer_id,
+            WeightClassificationTable.vehicle_identifier == vehicle_identifier,
+        )
         .join(WeightClassificationTable, onclause=WeightClassificationTable.id == WheelAggregationTable.weight_class_id)
         .group_by(WheelAggregationTable.id)
         .cte("distributions")
@@ -163,6 +173,7 @@ async def extract_results(db_session: async_sessionmaker[AsyncSession], requests
             pred = await predict_result(
                 session=session,
                 weight_class_id=r.id,
+                customer_id=r.customer_id,
                 vehicle_identifier=r.vehicle_identifier,
             )
             results[r.id] = pred

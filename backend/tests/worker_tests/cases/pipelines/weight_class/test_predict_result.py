@@ -172,7 +172,7 @@ async def function_session_scenario_complete(module_session: AsyncSession) -> As
 
 @pytest.mark.asyncio
 async def test_predict_normal_scenario(function_session_scenario_complete: AsyncSession) -> None:
-    result = await predict_result(function_session_scenario_complete, unpredicted_class_loaded.vehicle_identifier, unpredicted_class_loaded.id)
+    result = await predict_result(function_session_scenario_complete, unpredicted_class_loaded.vehicle_identifier, unpredicted_class_loaded.id, customer.id)
 
     assert result == WeightClassResult.LOADED
 
@@ -197,7 +197,12 @@ async def function_session_scenario_single_reading_per_result(module_session: As
 
 @pytest.mark.asyncio
 async def test_predict_single_aggregation_per_result_scenario(function_session_scenario_single_reading_per_result: AsyncSession) -> None:
-    result = await predict_result(function_session_scenario_single_reading_per_result, unpredicted_class_loaded.vehicle_identifier, unpredicted_class_loaded.id)
+    result = await predict_result(
+        function_session_scenario_single_reading_per_result,
+        unpredicted_class_loaded.vehicle_identifier,
+        unpredicted_class_loaded.id,
+        customer.id,
+    )
 
     assert result == WeightClassResult.LOADED
 
@@ -220,7 +225,12 @@ async def function_session_scenario_single_aggregation(module_session: AsyncSess
 
 @pytest.mark.asyncio
 async def test_predict_single_aggregation_scenario(function_session_scenario_single_aggregation: AsyncSession) -> None:
-    result = await predict_result(function_session_scenario_single_aggregation, unpredicted_class_loaded.vehicle_identifier, unpredicted_class_loaded.id)
+    result = await predict_result(
+        function_session_scenario_single_aggregation,
+        unpredicted_class_loaded.vehicle_identifier,
+        unpredicted_class_loaded.id,
+        customer.id,
+    )
 
     assert result == WeightClassResult.LOADED
 
@@ -241,6 +251,11 @@ async def function_session_scenario_no_previous_aggregations(module_session: Asy
 
 @pytest.mark.asyncio
 async def test_predict_no_previous_aggregations_scenario(function_session_scenario_no_previous_aggregations: AsyncSession) -> None:
-    result = await predict_result(function_session_scenario_no_previous_aggregations, unpredicted_class_loaded.vehicle_identifier, unpredicted_class_loaded.id)
+    result = await predict_result(
+        function_session_scenario_no_previous_aggregations,
+        unpredicted_class_loaded.vehicle_identifier,
+        unpredicted_class_loaded.id,
+        customer.id,
+    )
 
     assert result is None
