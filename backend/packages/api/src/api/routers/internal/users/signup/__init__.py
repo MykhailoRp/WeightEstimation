@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from api.routers.users.signup.new import router as new_router
-from api.routers.users.signup.validate import router as validate_router
+from .new import router as new_router
+from .validate import router as validate_router
 
 router = APIRouter(prefix="/signup", tags=["signup"])
 

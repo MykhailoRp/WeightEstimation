@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from api.routers.users.reset_password.request import router as request_router
-from api.routers.users.reset_password.set import router as set_router
+from .request import router as request_router
+from .set import router as set_router
 
 router = APIRouter(prefix="/reset_password")
 

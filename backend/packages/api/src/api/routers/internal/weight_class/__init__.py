@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 
-from api.routers.weight_class.list import router as list_router
-from api.routers.weight_class.new import router as new_router
-from api.routers.weight_class.weight_class_id import router as weight_class_id_router
+from .list import router as list_router
+from .new import router as new_router
+from .weight_class_id import router as weight_class_id_router
 
 router = APIRouter(prefix="/weight_classifications", tags=["weight_classifications"])
 

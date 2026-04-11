@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from api.routers.invoices.invoice_id.details import router as details_router
+from .details import router as details_router
 
 router = APIRouter(prefix="/{invoice_id}")
 

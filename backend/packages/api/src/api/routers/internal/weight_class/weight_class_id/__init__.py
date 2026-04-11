@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from api.routers.weight_class.weight_class_id.details import router as details_router
+from .details import router as details_router
 
 router = APIRouter(prefix="/{weight_class_id}")
 
