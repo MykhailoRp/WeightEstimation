@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Self
 
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import TIMESTAMP, ForeignKey, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from common.models.customer.invoice import Invoice
@@ -18,8 +18,8 @@ class InvoiceTable(Base):
     invoice_url: Mapped[str] = mapped_column(unique=True)
     customer_id: Mapped[UserId] = mapped_column(ForeignKey(CustomerTable.id))
 
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
-    finished_at: Mapped[datetime | None]
+    created_at: Mapped[datetime] = mapped_column(TIMESTAMP(True), server_default=func.now())
+    finished_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(True))
 
     amount: Mapped[float]
     currency: Mapped[Currency]

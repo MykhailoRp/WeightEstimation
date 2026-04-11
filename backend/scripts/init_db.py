@@ -7,12 +7,12 @@ from datetime import UTC, datetime
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
-from api.auth import SecretsManager, SessionConfig, TokenConfig
+from api.auth import ApiTokenConfig, SecretsManager, SessionConfig, TokenConfig
 from common.models.user import User
 from common.sql.config import DatabaseConfig
 from common.sql.tables.user import UserTable
 
-secret = SecretsManager(TokenConfig(), SessionConfig())
+secret = SecretsManager(TokenConfig(), SessionConfig(), ApiTokenConfig())
 
 
 users = [

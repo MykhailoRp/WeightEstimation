@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from api.auth import SecretsManager as _SecretsManager
 from api.auth import SessionConfig, TokenConfig
+from api.auth.conf import ApiTokenConfig
 from api.auth.exc import InvalidTokenError, TokenExpiredError
 from api.auth.models import TokenData as _TokenData
 from api.payments import InvoiceWrapper as _InvoiceWrapper
@@ -40,17 +41,18 @@ S3Client = Annotated[_S3Client, Depends(get_s3_client)]
 
 TOKEN_CONFIG = TokenConfig()
 SESSION_CONFIG = SessionConfig()
+API_TOKEN_CONFIG = ApiTokenConfig()
 
 
 @lru_cache(maxsize=1)
 def get_secrets_manager() -> _SecretsManager:
-    return _SecretsManager(token_conf=TOKEN_CONFIG, session_conf=SESSION_CONFIG)
+    return _SecretsManager(token_conf=TOKEN_CONFIG, session_conf=SESSION_CONFIG, api_token_conf=API_TOKEN_CONFIG)
 
 
 SecretsManager = Annotated[_SecretsManager, Depends(get_secrets_manager)]
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/internal/auth/login")
 
 
 def get_token_data(token: Annotated[str, Depends(oauth2_scheme)], secrets_manager: SecretsManager) -> _TokenData:

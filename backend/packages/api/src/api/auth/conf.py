@@ -17,3 +17,9 @@ class SessionConfig(BaseSettings):
     token_len: int = 32
 
     model_config = SettingsConfigDict(env_prefix="SESSION_")
+
+
+class ApiTokenConfig(BaseSettings):
+    token_len: int = 64
+
+    model_config = SettingsConfigDict(env_prefix="API_TOKEN_")
