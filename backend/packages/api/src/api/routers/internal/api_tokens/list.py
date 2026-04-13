@@ -1,4 +1,3 @@
-import asyncio
 from typing import Annotated
 
 from fastapi import APIRouter, Query
@@ -20,17 +19,15 @@ async def get_api_tokens(
 ) -> ApiTokenListResponse:
 
     async with session_maker() as session:
-        tokens, total = await asyncio.gather(
-            get_api_tokens_script(
-                session,
-                customer_ids=query.customer_ids if token_data.is_(UserRole.ADMIN) else [token_data.id],
-                limit=query.size,
-                offset=query.offset,
-            ),
-            count_api_tokens(
-                session,
-                customer_ids=query.customer_ids if token_data.is_(UserRole.ADMIN) else [token_data.id],
-            ),
+        tokens = await get_api_tokens_script(
+            session,
+            customer_ids=query.customer_ids if token_data.is_(UserRole.ADMIN) else [token_data.id],
+            limit=query.size,
+            offset=query.offset,
+        )
+        total = await count_api_tokens(
+            session,
+            customer_ids=query.customer_ids if token_data.is_(UserRole.ADMIN) else [token_data.id],
         )
 
     return ApiTokenListResponse.new(

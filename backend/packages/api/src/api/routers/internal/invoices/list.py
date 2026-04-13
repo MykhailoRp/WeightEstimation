@@ -1,4 +1,3 @@
-import asyncio
 from typing import Annotated
 
 from fastapi import APIRouter, Query
@@ -20,17 +19,15 @@ async def get_invoices(
 ) -> InvoiceListResponse:
 
     async with session_maker() as session:
-        classifications, total = await asyncio.gather(
-            get_invoices_script(
-                session,
-                customer_ids=query.customer_ids if token_data.is_(UserRole.ADMIN) else [token_data.id],
-                limit=query.size,
-                offset=query.offset,
-            ),
-            count_invoices(
-                session,
-                customer_ids=query.customer_ids if token_data.is_(UserRole.ADMIN) else [token_data.id],
-            ),
+        classifications = await get_invoices_script(
+            session,
+            customer_ids=query.customer_ids if token_data.is_(UserRole.ADMIN) else [token_data.id],
+            limit=query.size,
+            offset=query.offset,
+        )
+        total = await count_invoices(
+            session,
+            customer_ids=query.customer_ids if token_data.is_(UserRole.ADMIN) else [token_data.id],
         )
 
     return InvoiceListResponse.new(
