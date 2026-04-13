@@ -9,7 +9,7 @@ from common.kafka.messages.email import EmailSend
 from common.kafka.topics import EmailSendTopic
 from common.models.email.reset_password import ResetPasswordMessage
 from common.models.user.otp import ResetPasswordOTP
-from common.sql.scripts.getters import get_user_with_role
+from common.sql.scripts.user import get_user_with_role
 from common.sql.tables.user.otp import OTPTable, insert_otp
 
 router = APIRouter()

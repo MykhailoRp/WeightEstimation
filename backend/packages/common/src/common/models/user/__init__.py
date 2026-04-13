@@ -37,17 +37,12 @@ class UserWithRole(User):
         return len(set(r).union(self.role)) > 0
 
 
-def new_user_with_role(u: User, *, is_admin: bool, is_customer: bool) -> UserWithRole:
-    r = set()
-    if is_admin:
-        r.add(UserRole.ADMIN)
-    if is_customer:
-        r.add(UserRole.CUSTOMER)
+def new_user_with_role(u: User, *, roles: list[UserRole]) -> UserWithRole:
     return UserWithRole(
         id=u.id,
         email=u.email,
         email_verified=u.email_verified,
         password_hash=u.password_hash,
         created_at=u.created_at,
-        role=r,
+        role=set(roles),
     )

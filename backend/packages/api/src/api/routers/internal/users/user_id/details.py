@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Path, status
 from api.dependencies import DBSession, TokenData
 from api.models.user import UserDetailsResponse
 from common.models.user import UserRole
-from common.sql.scripts.getters import get_user_with_role
+from common.sql.scripts.user import get_user_with_role
 from common.types import UserId
 
 router = APIRouter()

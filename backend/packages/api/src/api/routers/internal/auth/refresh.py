@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status
 
 from api.dependencies import DBSession, SecretsManager
 from api.models.auth import RefreshRequest, RefreshResponse
-from common.sql.scripts.getters import get_user_with_role
+from common.sql.scripts.user import get_user_with_role
 
 router = APIRouter()
 

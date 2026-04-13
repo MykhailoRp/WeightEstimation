@@ -8,8 +8,10 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 
 from api.auth import ApiTokenConfig, SecretsManager, SessionConfig, TokenConfig
+from common.models.admin import Admin
 from common.models.user import User
 from common.sql.config import DatabaseConfig
+from common.sql.tables.admin import AdminTable
 from common.sql.tables.user import UserTable
 
 secret = SecretsManager(TokenConfig(), SessionConfig(), ApiTokenConfig())
@@ -32,6 +34,13 @@ users = [
     ),
 ]
 
+admins = [
+    Admin(
+        id=users[0].id,
+        promoted_by_id=None,
+    ),
+]
+
 
 async def main() -> None:
     database_engine = create_async_engine(DatabaseConfig().url)
@@ -40,6 +49,10 @@ async def main() -> None:
         logger.info("Users")
         for user in users:
             session.add(UserTable.new(user))
+
+        logger.info("Admins")
+        for admin in admins:
+            session.add(AdminTable.new(admin))
 
         await session.commit()
 
