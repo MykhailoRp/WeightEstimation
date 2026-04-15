@@ -1,0 +1,2593 @@
+{
+   "openapi": "3.1.0",
+   "info": {
+      "title": "Public API",
+      "version": "1.0"
+   },
+   "paths": {
+      "/api/health": {
+         "get": {
+            "summary": "Health",
+            "operationId": "health_api_health_get",
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HealthCheck"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/users/": {
+         "get": {
+            "tags": [
+               "user"
+            ],
+            "summary": "Get Users",
+            "operationId": "Get Users List",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "page",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "type": "integer",
+                     "default": 0,
+                     "title": "Page"
+                  }
+               },
+               {
+                  "name": "size",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "type": "integer",
+                     "default": 10,
+                     "title": "Size"
+                  }
+               },
+               {
+                  "name": "roles",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "anyOf": [
+                        {
+                           "type": "array",
+                           "uniqueItems": true,
+                           "items": {
+                              "$ref": "#/components/schemas/UserRole"
+                           }
+                        },
+                        {
+                           "type": "null"
+                        }
+                     ],
+                     "title": "Roles"
+                  }
+               },
+               {
+                  "name": "email_like",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "anyOf": [
+                        {
+                           "type": "string"
+                        },
+                        {
+                           "type": "null"
+                        }
+                     ],
+                     "title": "Email Like"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/UserListResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/users/{user_id}/reset_email/": {
+         "post": {
+            "tags": [
+               "user"
+            ],
+            "summary": "Reset Email",
+            "operationId": "Request Email Reset",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "user_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                     "type": "string",
+                     "format": "uuid",
+                     "title": "User Id"
+                  }
+               }
+            ],
+            "requestBody": {
+               "required": true,
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EmailResetRequest"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/OTPResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/users/{user_id}/reset_email/validate": {
+         "post": {
+            "tags": [
+               "user"
+            ],
+            "summary": "Validate Email",
+            "operationId": "Validate Email Reset",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "user_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                     "type": "string",
+                     "format": "uuid",
+                     "title": "User Id"
+                  }
+               }
+            ],
+            "requestBody": {
+               "required": true,
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/EmailValidateRequest"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/EmailValidateResponce"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/users/{user_id}/": {
+         "get": {
+            "tags": [
+               "user"
+            ],
+            "summary": "Get User",
+            "operationId": "Get User Details",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "user_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                     "type": "string",
+                     "format": "uuid",
+                     "title": "User Id"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/UserDetailsResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/users/signup/": {
+         "post": {
+            "tags": [
+               "user",
+               "signup"
+            ],
+            "summary": "Create New User",
+            "operationId": "New User",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/NewUserRequest"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/OTPResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/users/signup/validate": {
+         "post": {
+            "tags": [
+               "user",
+               "signup"
+            ],
+            "summary": "Validate New User",
+            "operationId": "Validate New User",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/ValidateUserRequest"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/ValidateUserResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/users/reset_password/": {
+         "post": {
+            "tags": [
+               "user"
+            ],
+            "summary": "Reset Password",
+            "operationId": "Request Password Reset",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/PasswordResetRequest"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/OTPResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/users/reset_password/set": {
+         "post": {
+            "tags": [
+               "user"
+            ],
+            "summary": "Set Password",
+            "operationId": "Set New Password",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/PasswordSetRequest"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/PasswordSetResponce"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            },
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ]
+         }
+      },
+      "/api/internal/auth/login": {
+         "post": {
+            "tags": [
+               "auth"
+            ],
+            "summary": "Login",
+            "operationId": "login_api_internal_auth_login_post",
+            "requestBody": {
+               "content": {
+                  "application/x-www-form-urlencoded": {
+                     "schema": {
+                        "$ref": "#/components/schemas/Body_login_api_internal_auth_login_post"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/LoginResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/auth/logout": {
+         "post": {
+            "tags": [
+               "auth"
+            ],
+            "summary": "Logout",
+            "operationId": "logout_api_internal_auth_logout_post",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/LogoutRequest"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/LogoutResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            },
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ]
+         }
+      },
+      "/api/internal/auth/me": {
+         "get": {
+            "tags": [
+               "auth"
+            ],
+            "summary": "Me",
+            "operationId": "me_api_internal_auth_me_get",
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/TokenData"
+                        }
+                     }
+                  }
+               }
+            },
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ]
+         }
+      },
+      "/api/internal/auth/refresh": {
+         "post": {
+            "tags": [
+               "auth"
+            ],
+            "summary": "Refresh",
+            "operationId": "refresh_api_internal_auth_refresh_post",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/RefreshRequest"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/RefreshResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/customers/{customer_id}/": {
+         "get": {
+            "tags": [
+               "customer"
+            ],
+            "summary": "Get Customer",
+            "operationId": "Get Customer Details",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "customer_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                     "type": "string",
+                     "format": "uuid",
+                     "title": "Customer Id"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/CustomerDetailsResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/weight_classifications/": {
+         "post": {
+            "tags": [
+               "weight_classifications"
+            ],
+            "summary": "Create Weight Classification",
+            "operationId": "New Weight Classification",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "requestBody": {
+               "required": true,
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/NewWeightClassification"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/WeightClassificationResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         },
+         "get": {
+            "tags": [
+               "weight_classifications"
+            ],
+            "summary": "Get Weight Classifications",
+            "operationId": "Get Weight Classification List",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "page",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "type": "integer",
+                     "default": 0,
+                     "title": "Page"
+                  }
+               },
+               {
+                  "name": "size",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "type": "integer",
+                     "default": 10,
+                     "title": "Size"
+                  }
+               },
+               {
+                  "name": "customer_ids",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "anyOf": [
+                        {
+                           "type": "array",
+                           "items": {
+                              "type": "string",
+                              "format": "uuid"
+                           }
+                        },
+                        {
+                           "type": "null"
+                        }
+                     ],
+                     "title": "Customer Ids"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/WeightClassificationListResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/weight_classifications/{weight_class_id}/": {
+         "get": {
+            "tags": [
+               "weight_classifications"
+            ],
+            "summary": "Get Weight Classification",
+            "operationId": "Get Weight Classification Details",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "weight_class_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                     "type": "string",
+                     "format": "uuid",
+                     "title": "Weight Class Id"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/WeightClassificationResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/invoices/": {
+         "get": {
+            "tags": [
+               "invoices"
+            ],
+            "summary": "Get Invoices",
+            "operationId": "Get Invoices List",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "page",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "type": "integer",
+                     "default": 0,
+                     "title": "Page"
+                  }
+               },
+               {
+                  "name": "size",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "type": "integer",
+                     "default": 10,
+                     "title": "Size"
+                  }
+               },
+               {
+                  "name": "customer_ids",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "anyOf": [
+                        {
+                           "type": "array",
+                           "items": {
+                              "type": "string",
+                              "format": "uuid"
+                           }
+                        },
+                        {
+                           "type": "null"
+                        }
+                     ],
+                     "title": "Customer Ids"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/InvoiceListResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         },
+         "post": {
+            "tags": [
+               "invoices"
+            ],
+            "summary": "New Invoice",
+            "operationId": "Create New Invoice",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "requestBody": {
+               "required": true,
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/NewInvoiceRequest"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/Invoice"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/invoices/{invoice_id}/": {
+         "get": {
+            "tags": [
+               "invoices"
+            ],
+            "summary": "Get Invoice",
+            "operationId": "Get Invoice Details",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "invoice_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                     "type": "string",
+                     "format": "uuid",
+                     "title": "Invoice Id"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/Invoice"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/api_tokens/": {
+         "post": {
+            "tags": [
+               "api_tokens"
+            ],
+            "summary": "New Token",
+            "operationId": "Create New Api Token",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "requestBody": {
+               "required": true,
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/NewApiTokenRequest"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/ApiToken"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         },
+         "get": {
+            "tags": [
+               "api_tokens"
+            ],
+            "summary": "Get Api Tokens",
+            "operationId": "Get Api Token List",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "page",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "type": "integer",
+                     "default": 0,
+                     "title": "Page"
+                  }
+               },
+               {
+                  "name": "size",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "type": "integer",
+                     "default": 10,
+                     "title": "Size"
+                  }
+               },
+               {
+                  "name": "customer_ids",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "anyOf": [
+                        {
+                           "type": "array",
+                           "items": {
+                              "type": "string",
+                              "format": "uuid"
+                           }
+                        },
+                        {
+                           "type": "null"
+                        }
+                     ],
+                     "title": "Customer Ids"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/ApiTokenListResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/api_tokens/{api_token}/": {
+         "delete": {
+            "tags": [
+               "api_tokens"
+            ],
+            "summary": "Delete Token",
+            "operationId": "Delete Api Token",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "token",
+                  "in": "query",
+                  "required": true,
+                  "schema": {
+                     "type": "string",
+                     "title": "Token"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/ApiToken"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/internal/upload": {
+         "post": {
+            "summary": "Upload",
+            "operationId": "Upload File To Temporary Folder",
+            "requestBody": {
+               "content": {
+                  "multipart/form-data": {
+                     "schema": {
+                        "$ref": "#/components/schemas/Body_Upload_File_To_Temporary_Folder"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/FileRespose"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            },
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ]
+         }
+      },
+      "/api/internal/admins/": {
+         "post": {
+            "tags": [
+               "admin"
+            ],
+            "summary": "New Admin",
+            "operationId": "Create New Admin",
+            "requestBody": {
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/NewAdminRequest"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/AdminDetailsResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            },
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ]
+         }
+      },
+      "/api/internal/admins/{admin_id}/": {
+         "get": {
+            "tags": [
+               "admin"
+            ],
+            "summary": "Get Admin",
+            "operationId": "Get Admin Details",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "admin_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                     "type": "string",
+                     "format": "uuid",
+                     "title": "Admin Id"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/AdminDetailsResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         },
+         "delete": {
+            "tags": [
+               "admin"
+            ],
+            "summary": "Delete Admin",
+            "operationId": "Demote Admin",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "admin_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                     "type": "string",
+                     "format": "uuid",
+                     "title": "Admin Id"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/DemoteAdminResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/public/weight_classifications/": {
+         "post": {
+            "tags": [
+               "public"
+            ],
+            "summary": "Create Weight Classification",
+            "operationId": "New Weight Classification Public",
+            "security": [
+               {
+                  "APIKeyHeader": []
+               }
+            ],
+            "requestBody": {
+               "required": true,
+               "content": {
+                  "application/json": {
+                     "schema": {
+                        "$ref": "#/components/schemas/PublicNewWeightClassification"
+                     }
+                  }
+               }
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/WeightClassificationResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         },
+         "get": {
+            "tags": [
+               "public"
+            ],
+            "summary": "Get Weight Classifications Public",
+            "operationId": "Get Weight Classification List Public",
+            "security": [
+               {
+                  "APIKeyHeader": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "page",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "type": "integer",
+                     "default": 0,
+                     "title": "Page"
+                  }
+               },
+               {
+                  "name": "size",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "type": "integer",
+                     "default": 10,
+                     "title": "Size"
+                  }
+               },
+               {
+                  "name": "customer_ids",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                     "anyOf": [
+                        {
+                           "type": "array",
+                           "items": {
+                              "type": "string",
+                              "format": "uuid"
+                           }
+                        },
+                        {
+                           "type": "null"
+                        }
+                     ],
+                     "title": "Customer Ids"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/WeightClassificationListResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/public/weight_classifications/{weight_class_id}/": {
+         "get": {
+            "tags": [
+               "public"
+            ],
+            "summary": "Get Weight Classification",
+            "operationId": "Get Weight Classification Details Public",
+            "security": [
+               {
+                  "APIKeyHeader": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "weight_class_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                     "type": "string",
+                     "format": "uuid",
+                     "title": "Weight Class Id"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/WeightClassificationResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
+      "/api/public/upload": {
+         "post": {
+            "tags": [
+               "public"
+            ],
+            "summary": "Upload",
+            "operationId": "Upload File To Temporary Folder Public",
+            "requestBody": {
+               "content": {
+                  "multipart/form-data": {
+                     "schema": {
+                        "$ref": "#/components/schemas/Body_Upload_File_To_Temporary_Folder_Public"
+                     }
+                  }
+               },
+               "required": true
+            },
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/FileRespose"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            },
+            "security": [
+               {
+                  "APIKeyHeader": []
+               }
+            ]
+         }
+      }
+   },
+   "components": {
+      "schemas": {
+         "AdminDetailsResponse": {
+            "properties": {
+               "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Id"
+               },
+               "promoted_by_id": {
+                  "anyOf": [
+                     {
+                        "type": "string",
+                        "format": "uuid"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ],
+                  "title": "Promoted By Id"
+               }
+            },
+            "type": "object",
+            "required": [
+               "id",
+               "promoted_by_id"
+            ],
+            "title": "AdminDetailsResponse"
+         },
+         "ApiToken": {
+            "properties": {
+               "token": {
+                  "type": "string",
+                  "title": "Token"
+               },
+               "customer_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Customer Id"
+               },
+               "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "Created At"
+               }
+            },
+            "type": "object",
+            "required": [
+               "token",
+               "customer_id",
+               "created_at"
+            ],
+            "title": "ApiToken"
+         },
+         "ApiTokenListResponse": {
+            "properties": {
+               "items": {
+                  "items": {
+                     "$ref": "#/components/schemas/ApiToken"
+                  },
+                  "type": "array",
+                  "title": "Items"
+               },
+               "total_count": {
+                  "type": "integer",
+                  "title": "Total Count"
+               }
+            },
+            "type": "object",
+            "required": [
+               "items",
+               "total_count"
+            ],
+            "title": "ApiTokenListResponse"
+         },
+         "Body_Upload_File_To_Temporary_Folder": {
+            "properties": {
+               "file": {
+                  "type": "string",
+                  "contentMediaType": "application/octet-stream",
+                  "title": "File"
+               }
+            },
+            "type": "object",
+            "required": [
+               "file"
+            ],
+            "title": "Body_Upload File To Temporary Folder"
+         },
+         "Body_Upload_File_To_Temporary_Folder_Public": {
+            "properties": {
+               "file": {
+                  "type": "string",
+                  "contentMediaType": "application/octet-stream",
+                  "title": "File"
+               }
+            },
+            "type": "object",
+            "required": [
+               "file"
+            ],
+            "title": "Body_Upload File To Temporary Folder Public"
+         },
+         "Body_login_api_internal_auth_login_post": {
+            "properties": {
+               "grant_type": {
+                  "anyOf": [
+                     {
+                        "type": "string",
+                        "pattern": "^password$"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ],
+                  "title": "Grant Type"
+               },
+               "username": {
+                  "type": "string",
+                  "title": "Username"
+               },
+               "password": {
+                  "type": "string",
+                  "format": "password",
+                  "title": "Password"
+               },
+               "scope": {
+                  "type": "string",
+                  "title": "Scope",
+                  "default": ""
+               },
+               "client_id": {
+                  "anyOf": [
+                     {
+                        "type": "string"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ],
+                  "title": "Client Id"
+               },
+               "client_secret": {
+                  "anyOf": [
+                     {
+                        "type": "string"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ],
+                  "format": "password",
+                  "title": "Client Secret"
+               }
+            },
+            "type": "object",
+            "required": [
+               "username",
+               "password"
+            ],
+            "title": "Body_login_api_internal_auth_login_post"
+         },
+         "Currency": {
+            "type": "string",
+            "enum": [
+               "UAH"
+            ],
+            "title": "Currency"
+         },
+         "CustomerDetailsResponse": {
+            "properties": {
+               "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Id"
+               },
+               "funds": {
+                  "type": "number",
+                  "title": "Funds"
+               }
+            },
+            "type": "object",
+            "required": [
+               "id",
+               "funds"
+            ],
+            "title": "CustomerDetailsResponse"
+         },
+         "DemoteAdminResponse": {
+            "properties": {},
+            "type": "object",
+            "title": "DemoteAdminResponse"
+         },
+         "EmailResetRequest": {
+            "properties": {
+               "new_email": {
+                  "type": "string",
+                  "title": "New Email"
+               }
+            },
+            "type": "object",
+            "required": [
+               "new_email"
+            ],
+            "title": "EmailResetRequest"
+         },
+         "EmailValidateRequest": {
+            "properties": {
+               "code": {
+                  "type": "string",
+                  "title": "Code"
+               }
+            },
+            "type": "object",
+            "required": [
+               "code"
+            ],
+            "title": "EmailValidateRequest"
+         },
+         "EmailValidateResponce": {
+            "properties": {},
+            "type": "object",
+            "title": "EmailValidateResponce"
+         },
+         "FileRespose": {
+            "properties": {
+               "file_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "File Id"
+               }
+            },
+            "type": "object",
+            "required": [
+               "file_id"
+            ],
+            "title": "FileRespose"
+         },
+         "HTTPValidationError": {
+            "properties": {
+               "detail": {
+                  "items": {
+                     "$ref": "#/components/schemas/ValidationError"
+                  },
+                  "type": "array",
+                  "title": "Detail"
+               }
+            },
+            "type": "object",
+            "title": "HTTPValidationError"
+         },
+         "HealthCheck": {
+            "properties": {
+               "status": {
+                  "type": "integer",
+                  "title": "Status"
+               },
+               "text": {
+                  "type": "string",
+                  "title": "Text"
+               }
+            },
+            "type": "object",
+            "required": [
+               "status",
+               "text"
+            ],
+            "title": "HealthCheck"
+         },
+         "Invoice": {
+            "properties": {
+               "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Id"
+               },
+               "invoice_url": {
+                  "type": "string",
+                  "title": "Invoice Url"
+               },
+               "customer_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Customer Id"
+               },
+               "amount": {
+                  "type": "number",
+                  "title": "Amount"
+               },
+               "currency": {
+                  "$ref": "#/components/schemas/Currency"
+               },
+               "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "Created At"
+               },
+               "finished_at": {
+                  "anyOf": [
+                     {
+                        "type": "string",
+                        "format": "date-time"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ],
+                  "title": "Finished At"
+               },
+               "status": {
+                  "$ref": "#/components/schemas/InvoiceStatus"
+               },
+               "reason": {
+                  "anyOf": [
+                     {
+                        "type": "string"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ],
+                  "title": "Reason"
+               },
+               "reason_code": {
+                  "anyOf": [
+                     {
+                        "type": "string"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ],
+                  "title": "Reason Code"
+               }
+            },
+            "type": "object",
+            "required": [
+               "id",
+               "invoice_url",
+               "customer_id",
+               "amount",
+               "currency",
+               "created_at",
+               "finished_at",
+               "status",
+               "reason",
+               "reason_code"
+            ],
+            "title": "Invoice"
+         },
+         "InvoiceListResponse": {
+            "properties": {
+               "items": {
+                  "items": {
+                     "$ref": "#/components/schemas/Invoice"
+                  },
+                  "type": "array",
+                  "title": "Items"
+               },
+               "total_count": {
+                  "type": "integer",
+                  "title": "Total Count"
+               }
+            },
+            "type": "object",
+            "required": [
+               "items",
+               "total_count"
+            ],
+            "title": "InvoiceListResponse"
+         },
+         "InvoiceStatus": {
+            "type": "string",
+            "enum": [
+               "PROCESSING",
+               "COMPLETED",
+               "FAILED"
+            ],
+            "title": "InvoiceStatus"
+         },
+         "LoginResponse": {
+            "properties": {
+               "token_type": {
+                  "type": "string",
+                  "const": "bearer",
+                  "title": "Token Type",
+                  "default": "bearer"
+               },
+               "access_token": {
+                  "type": "string",
+                  "title": "Access Token"
+               },
+               "session": {
+                  "type": "string",
+                  "title": "Session"
+               }
+            },
+            "type": "object",
+            "required": [
+               "access_token",
+               "session"
+            ],
+            "title": "LoginResponse"
+         },
+         "LogoutRequest": {
+            "properties": {
+               "session": {
+                  "type": "string",
+                  "title": "Session"
+               }
+            },
+            "type": "object",
+            "required": [
+               "session"
+            ],
+            "title": "LogoutRequest"
+         },
+         "LogoutResponse": {
+            "properties": {},
+            "type": "object",
+            "title": "LogoutResponse"
+         },
+         "NewAdminRequest": {
+            "properties": {
+               "user_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "User Id"
+               }
+            },
+            "type": "object",
+            "required": [
+               "user_id"
+            ],
+            "title": "NewAdminRequest"
+         },
+         "NewApiTokenRequest": {
+            "properties": {
+               "customer_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Customer Id"
+               }
+            },
+            "type": "object",
+            "required": [
+               "customer_id"
+            ],
+            "title": "NewApiTokenRequest"
+         },
+         "NewInvoiceRequest": {
+            "properties": {
+               "customer_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Customer Id"
+               },
+               "amount": {
+                  "type": "number",
+                  "title": "Amount"
+               }
+            },
+            "type": "object",
+            "required": [
+               "customer_id",
+               "amount"
+            ],
+            "title": "NewInvoiceRequest"
+         },
+         "NewUserRequest": {
+            "properties": {
+               "email": {
+                  "type": "string",
+                  "title": "Email"
+               },
+               "password": {
+                  "type": "string",
+                  "title": "Password"
+               }
+            },
+            "type": "object",
+            "required": [
+               "email",
+               "password"
+            ],
+            "title": "NewUserRequest"
+         },
+         "NewWeightClassification": {
+            "properties": {
+               "customer_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Customer Id"
+               },
+               "file_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "File Id"
+               },
+               "vehicle_identifier": {
+                  "type": "string",
+                  "title": "Vehicle Identifier"
+               },
+               "assigned": {
+                  "$ref": "#/components/schemas/WeightClassResult"
+               }
+            },
+            "type": "object",
+            "required": [
+               "customer_id",
+               "file_id",
+               "vehicle_identifier",
+               "assigned"
+            ],
+            "title": "NewWeightClassification"
+         },
+         "OTPResponse": {
+            "properties": {
+               "type": {
+                  "$ref": "#/components/schemas/OTPType"
+               },
+               "user_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "User Id"
+               },
+               "expire_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "Expire At"
+               }
+            },
+            "type": "object",
+            "required": [
+               "type",
+               "user_id",
+               "expire_at"
+            ],
+            "title": "OTPResponse"
+         },
+         "OTPType": {
+            "type": "string",
+            "enum": [
+               "VALIDATE_USER",
+               "VALIDATE_EMAIL",
+               "RESET_PASSWORD"
+            ],
+            "title": "OTPType"
+         },
+         "PasswordResetRequest": {
+            "properties": {
+               "email": {
+                  "type": "string",
+                  "title": "Email"
+               }
+            },
+            "type": "object",
+            "required": [
+               "email"
+            ],
+            "title": "PasswordResetRequest"
+         },
+         "PasswordSetRequest": {
+            "properties": {
+               "code": {
+                  "type": "string",
+                  "title": "Code"
+               },
+               "new_password": {
+                  "type": "string",
+                  "title": "New Password"
+               }
+            },
+            "type": "object",
+            "required": [
+               "code",
+               "new_password"
+            ],
+            "title": "PasswordSetRequest"
+         },
+         "PasswordSetResponce": {
+            "properties": {},
+            "type": "object",
+            "title": "PasswordSetResponce"
+         },
+         "PublicNewWeightClassification": {
+            "properties": {
+               "file_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "File Id"
+               },
+               "vehicle_identifier": {
+                  "type": "string",
+                  "title": "Vehicle Identifier"
+               },
+               "assigned": {
+                  "$ref": "#/components/schemas/WeightClassResult"
+               }
+            },
+            "type": "object",
+            "required": [
+               "file_id",
+               "vehicle_identifier",
+               "assigned"
+            ],
+            "title": "PublicNewWeightClassification"
+         },
+         "RefreshRequest": {
+            "properties": {
+               "user_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "User Id"
+               },
+               "session": {
+                  "type": "string",
+                  "title": "Session"
+               }
+            },
+            "type": "object",
+            "required": [
+               "user_id",
+               "session"
+            ],
+            "title": "RefreshRequest"
+         },
+         "RefreshResponse": {
+            "properties": {
+               "token_type": {
+                  "type": "string",
+                  "const": "bearer",
+                  "title": "Token Type",
+                  "default": "bearer"
+               },
+               "access_token": {
+                  "type": "string",
+                  "title": "Access Token"
+               }
+            },
+            "type": "object",
+            "required": [
+               "access_token"
+            ],
+            "title": "RefreshResponse"
+         },
+         "TokenData": {
+            "properties": {
+               "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Id"
+               },
+               "email": {
+                  "type": "string",
+                  "title": "Email"
+               },
+               "role": {
+                  "items": {
+                     "$ref": "#/components/schemas/UserRole"
+                  },
+                  "type": "array",
+                  "uniqueItems": true,
+                  "title": "Role"
+               }
+            },
+            "type": "object",
+            "required": [
+               "id",
+               "email",
+               "role"
+            ],
+            "title": "TokenData"
+         },
+         "UserDetailsResponse": {
+            "properties": {
+               "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Id"
+               },
+               "email": {
+                  "type": "string",
+                  "title": "Email"
+               },
+               "email_verified": {
+                  "type": "boolean",
+                  "title": "Email Verified"
+               },
+               "role": {
+                  "items": {
+                     "$ref": "#/components/schemas/UserRole"
+                  },
+                  "type": "array",
+                  "uniqueItems": true,
+                  "title": "Role"
+               },
+               "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "Created At"
+               }
+            },
+            "type": "object",
+            "required": [
+               "id",
+               "email",
+               "email_verified",
+               "role",
+               "created_at"
+            ],
+            "title": "UserDetailsResponse"
+         },
+         "UserListResponse": {
+            "properties": {
+               "items": {
+                  "items": {
+                     "$ref": "#/components/schemas/UserDetailsResponse"
+                  },
+                  "type": "array",
+                  "title": "Items"
+               },
+               "total_count": {
+                  "type": "integer",
+                  "title": "Total Count"
+               }
+            },
+            "type": "object",
+            "required": [
+               "items",
+               "total_count"
+            ],
+            "title": "UserListResponse"
+         },
+         "UserRole": {
+            "type": "string",
+            "enum": [
+               "CUSTOMER",
+               "ADMIN"
+            ],
+            "title": "UserRole"
+         },
+         "ValidateUserRequest": {
+            "properties": {
+               "user_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "User Id"
+               },
+               "code": {
+                  "type": "string",
+                  "title": "Code"
+               }
+            },
+            "type": "object",
+            "required": [
+               "user_id",
+               "code"
+            ],
+            "title": "ValidateUserRequest"
+         },
+         "ValidateUserResponse": {
+            "properties": {},
+            "type": "object",
+            "title": "ValidateUserResponse"
+         },
+         "ValidationError": {
+            "properties": {
+               "loc": {
+                  "items": {
+                     "anyOf": [
+                        {
+                           "type": "string"
+                        },
+                        {
+                           "type": "integer"
+                        }
+                     ]
+                  },
+                  "type": "array",
+                  "title": "Location"
+               },
+               "msg": {
+                  "type": "string",
+                  "title": "Message"
+               },
+               "type": {
+                  "type": "string",
+                  "title": "Error Type"
+               },
+               "input": {
+                  "title": "Input"
+               },
+               "ctx": {
+                  "type": "object",
+                  "title": "Context"
+               }
+            },
+            "type": "object",
+            "required": [
+               "loc",
+               "msg",
+               "type"
+            ],
+            "title": "ValidationError"
+         },
+         "WeightClassResult": {
+            "type": "string",
+            "enum": [
+               "EMPTY",
+               "LOADED"
+            ],
+            "title": "WeightClassResult"
+         },
+         "WeightClassStatus": {
+            "type": "string",
+            "enum": [
+               "PENDING",
+               "FRAMES_SPLIT",
+               "MASKS_EXTRACTED",
+               "FEATURES_EXTRACTED",
+               "COMPLETED"
+            ],
+            "title": "WeightClassStatus"
+         },
+         "WeightClassificationItem": {
+            "properties": {
+               "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Id"
+               },
+               "vehicle_identifier": {
+                  "type": "string",
+                  "title": "Vehicle Identifier"
+               },
+               "customer_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Customer Id"
+               },
+               "status": {
+                  "$ref": "#/components/schemas/WeightClassStatus"
+               },
+               "result": {
+                  "anyOf": [
+                     {
+                        "$ref": "#/components/schemas/WeightClassResult"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ]
+               },
+               "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "Created At"
+               },
+               "updated_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "Updated At"
+               },
+               "finished_at": {
+                  "anyOf": [
+                     {
+                        "type": "string",
+                        "format": "date-time"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ],
+                  "title": "Finished At"
+               },
+               "processing_cost": {
+                  "anyOf": [
+                     {
+                        "type": "number"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ],
+                  "title": "Processing Cost"
+               }
+            },
+            "type": "object",
+            "required": [
+               "id",
+               "vehicle_identifier",
+               "customer_id",
+               "status",
+               "result",
+               "created_at",
+               "updated_at",
+               "finished_at",
+               "processing_cost"
+            ],
+            "title": "WeightClassificationItem"
+         },
+         "WeightClassificationListResponse": {
+            "properties": {
+               "items": {
+                  "items": {
+                     "$ref": "#/components/schemas/WeightClassificationItem"
+                  },
+                  "type": "array",
+                  "title": "Items"
+               },
+               "total_count": {
+                  "type": "integer",
+                  "title": "Total Count"
+               }
+            },
+            "type": "object",
+            "required": [
+               "items",
+               "total_count"
+            ],
+            "title": "WeightClassificationListResponse"
+         },
+         "WeightClassificationResponse": {
+            "properties": {
+               "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Id"
+               },
+               "vehicle_identifier": {
+                  "type": "string",
+                  "title": "Vehicle Identifier"
+               },
+               "customer_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "title": "Customer Id"
+               },
+               "status": {
+                  "$ref": "#/components/schemas/WeightClassStatus"
+               },
+               "assigned": {
+                  "$ref": "#/components/schemas/WeightClassResult"
+               },
+               "result": {
+                  "anyOf": [
+                     {
+                        "$ref": "#/components/schemas/WeightClassResult"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ]
+               },
+               "created_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "Created At"
+               },
+               "updated_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "title": "Updated At"
+               },
+               "finished_at": {
+                  "anyOf": [
+                     {
+                        "type": "string",
+                        "format": "date-time"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ],
+                  "title": "Finished At"
+               },
+               "video_url": {
+                  "type": "string",
+                  "title": "Video Url"
+               },
+               "processing_cost": {
+                  "anyOf": [
+                     {
+                        "type": "number"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ],
+                  "title": "Processing Cost"
+               }
+            },
+            "type": "object",
+            "required": [
+               "id",
+               "vehicle_identifier",
+               "customer_id",
+               "status",
+               "assigned",
+               "result",
+               "created_at",
+               "updated_at",
+               "finished_at",
+               "video_url",
+               "processing_cost"
+            ],
+            "title": "WeightClassificationResponse"
+         }
+      },
+      "securitySchemes": {
+         "OAuth2PasswordBearer": {
+            "type": "oauth2",
+            "flows": {
+               "password": {
+                  "scopes": {},
+                  "tokenUrl": "/api/internal/auth/login"
+               }
+            }
+         },
+         "APIKeyHeader": {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-API-Key"
+         }
+      }
+   }
+}
