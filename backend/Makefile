@@ -50,3 +50,6 @@ scripts/%: scripts/%.py
 
 psql:
 	docker compose exec db psql -U postgres
+
+openapi:
+	uv run -s --reinstall scripts/generate_openapi.py

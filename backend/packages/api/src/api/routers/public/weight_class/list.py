@@ -10,8 +10,8 @@ from common.sql.scripts.getters import get_weight_classifications as get_weight_
 router = APIRouter()
 
 
-@router.get("/", status_code=200, operation_id="Get Weight Classification List")
-async def get_weight_classifications(
+@router.get("/", status_code=200, operation_id="Get Weight Classification List Public")
+async def get_weight_classifications_public(
     query: Annotated[WeightClassificationListRequest, Query()],
     session_maker: DBSession,
     token_data: ApiUser,

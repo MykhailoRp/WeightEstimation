@@ -10,7 +10,7 @@ from common.types import WeightClassId
 router = APIRouter()
 
 
-@router.get("/", status_code=200, operation_id="Get Weight Classification Details")
+@router.get("/", status_code=200, operation_id="Get Weight Classification Details Public")
 async def get_weight_classification(
     weight_class_id: Annotated[WeightClassId, Path()],
     session_maker: DBSession,

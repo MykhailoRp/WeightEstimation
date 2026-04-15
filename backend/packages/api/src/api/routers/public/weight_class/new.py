@@ -11,7 +11,7 @@ from common.sql.tables import WeightClassificationTable
 router = APIRouter()
 
 
-@router.post("/", status_code=200, operation_id="New New Weight Classification")
+@router.post("/", status_code=200, operation_id="New Weight Classification Public")
 async def create_weight_classification(
     request: Annotated[PublicNewWeightClassification, Body()],
     session_maker: DBSession,
