@@ -1,2 +1,1 @@
-def hello() -> str:
-    return "Hello from common!"
+import common.logger  # noqa

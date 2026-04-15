@@ -12,6 +12,10 @@ members = [
     "packages/api",
     "packages/worker",
     "packages/db_setup",
+    "tests/testlib",
+    "tests/common_tests",
+    "tests/api_tests",
+    "tests/worker_tests",
 ]
 
 [dependency-groups]
@@ -24,6 +28,17 @@ dev = [
 
 [tool.mypy]
 exclude_gitignore = true
+explicit_package_bases = true
+mypy_path = [
+    "packages/common/src",
+    "packages/api/src",
+    "packages/worker/src",
+    "packages/db_setup/src",
+    "tests/testlib/src",
+    "tests/common_tests/src",
+    "tests/api_tests/src",
+    "tests/worker_tests/src",
+]
 
 disallow_untyped_defs = true
 disallow_untyped_calls = true
@@ -32,6 +47,7 @@ warn_return_any = true
 warn_unused_configs = true
 warn_redundant_casts = true
 warn_unused_ignores = true
+plugins = ["pydantic.mypy"]
 
 [tool.ruff]
 target-version = "py312"
@@ -60,10 +76,13 @@ ignore = [
     "FBT003", # Boolean positional value in function call
     "E501",   # line too long (handled by formatter)
     "B008",   # FastAPI dependency injection false positives
+    "SIM108", # Use ternary operator instead of `if`-`else`-block
+    "SIM103", # Return the negated condition directly
 ]
+unfixable = ["F401"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["api", "common", "worker"]
+known-first-party = ["api", "common", "worker", "db_setup", "testlib", "common_tests", "api_tests", "worker_tests"]
 
 [tool.ruff.format]
 quote-style = "double"

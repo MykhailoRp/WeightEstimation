@@ -1,5 +1,11 @@
+# TODO: add test logging
+test :
+	docker compose -f docker-compose.test.yaml down -v --remove-orphans
+	docker compose -f docker-compose.test.yaml up --build --abort-on-container-failure --remove-orphans || [ $$? -eq 130 ]
+	docker compose -f docker-compose.test.yaml down -v --remove-orphans
+
 dev : 
-	docker compose up --build
+	docker compose --env-file .env up --build --remove-orphans
 
 api : 
 	uv run uvicorn api.main:app --host localhost --port 8000 --reload
@@ -28,8 +34,22 @@ pre-commit : lint
 
 NAME ?=
 migrate : 
-	docker compose run --rm db_setup uv run alembic upgrade head
+	docker compose run db_setup
 
 migration : migrate
 	@test -n "$(NAME)" || { echo "NAME is required! Usage: make migration NAME=value"; exit 1; }
 	docker compose run --rm db_setup uv run alembic revision --autogenerate -m "$(NAME)"
+
+sam2-checkpoints : 
+	uv run hf download facebook/sam2.1-hiera-small --local-dir checkpoints/sam2
+
+checkpoints : sam2-checkpoints
+
+scripts/%: scripts/%.py
+	docker compose run -v ./$<:/workspace/$< -w /workspace api uv run $<
+
+psql:
+	docker compose exec db psql -U postgres
+
+openapi:
+	uv run -s --reinstall scripts/generate_openapi.py

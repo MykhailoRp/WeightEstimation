@@ -1,0 +1,135 @@
+from typing import TYPE_CHECKING, Any
+
+from loguru import logger
+from pydantic import ValidationError
+from sqlalchemy import Select, delete, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from common.models.customer import Customer
+from common.models.user.otp import OTP
+from common.models.weight_class.weight_class import WeightClassification
+from common.sql.tables import CustomerTable, OTPTable, WeightClassificationTable
+from common.types import UserId, WeightClassId
+
+if TYPE_CHECKING:
+    from sqlalchemy.sql.dml import ReturningDelete
+
+
+async def get_customer(session: AsyncSession, *, id: UserId | None = None) -> Customer | None:
+    statement = select(
+        CustomerTable,
+    )
+
+    if id is not None:
+        statement = statement.where(CustomerTable.id == id)
+
+    result = (await session.execute(statement)).t.one_or_none()
+
+    if result is None:
+        return None
+
+    (customer,) = result
+    return customer.m()
+
+
+def apply_weight_classification_filter[T: tuple[Any, ...]](
+    statement: Select[T],
+    *,
+    id: WeightClassId | None,
+    customer_ids: list[UserId] | None,
+    limit: int | None,
+    offset: int | None,
+) -> Select[T]:
+    if id is not None:
+        statement = statement.where(WeightClassificationTable.id == id)
+
+    if customer_ids is not None:
+        statement = statement.where(WeightClassificationTable.customer_id.in_(customer_ids))
+
+    if limit is not None:
+        statement = statement.limit(limit)
+
+    if offset is not None:
+        statement = statement.offset(offset)
+
+    return statement
+
+
+async def count_weight_classifications(
+    session: AsyncSession,
+    *,
+    customer_ids: list[UserId] | None = None,
+) -> int:
+    statement = apply_weight_classification_filter(
+        select(
+            func.count(),
+        ).select_from(WeightClassificationTable),
+        id=None,
+        customer_ids=customer_ids,
+        limit=None,
+        offset=None,
+    )
+
+    result = await session.scalar(statement)
+
+    return result or 0
+
+
+async def get_weight_classifications(
+    session: AsyncSession,
+    *,
+    id: WeightClassId | None = None,
+    customer_ids: list[UserId] | None = None,
+    limit: int | None = None,
+    offset: int | None = None,
+) -> list[WeightClassification]:
+    statement = apply_weight_classification_filter(
+        select(
+            WeightClassificationTable,
+        ),
+        id=id,
+        customer_ids=customer_ids,
+        limit=limit,
+        offset=offset,
+    )
+
+    result = await session.scalars(statement)
+
+    return [r.m() for r in result]
+
+
+async def get_weight_classification(session: AsyncSession, *, id: WeightClassId | None, customer_id: UserId | None) -> WeightClassification | None:
+    weight_classifications = await get_weight_classifications(session, id=id, customer_ids=[customer_id] if customer_id else None, limit=1)
+
+    return weight_classifications[0] if len(weight_classifications) == 1 else None
+
+
+async def validate_otp[T: OTP](session: AsyncSession, type: type[T], password: str, user_id: UserId | None = None, *, delete_after: bool) -> T | None:
+    with logger.contextualize(type=type, user_id=user_id, delete_after=delete_after):
+        logger.info("Validating OTP")
+
+        statement: Select[tuple[OTPTable]] | ReturningDelete[tuple[OTPTable]]
+        if delete_after:
+            statement = delete(OTPTable).returning(OTPTable)
+        else:
+            statement = select(OTPTable)
+
+        statement = statement.where(
+            OTPTable.password == password,
+            OTPTable.expire_at > func.now(),
+        )
+
+        if user_id is not None:
+            statement = statement.where(OTPTable.user_id == user_id)
+
+        record = (await session.scalars(statement)).one_or_none()
+
+        if record is None:
+            logger.warning("Did not find OTP")
+            return record
+
+        try:
+            return type.model_validate(record.m().model_dump())
+        except ValidationError:
+            logger.exception("Did not validate OTP")
+            return None

@@ -11,6 +11,9 @@ dependencies = [
     "fastapi>=0.129.0",
     "uvicorn>=0.41.0",
     "common",
+    "python-multipart>=0.0.22",
+    "pyjwt>=2.12.1",
+    "pwdlib[argon2]>=0.3.0",
 ]
 
 [tool.uv.sources]
