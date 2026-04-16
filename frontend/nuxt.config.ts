@@ -17,18 +17,18 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2025-01-15',
 
+  vite: {
+    server: {
+      hmr: true
+    }
+  },
+
   eslint: {
     config: {
       stylistic: {
         commaDangle: 'never',
         braceStyle: '1tbs'
       }
-    }
-  },
-  
-  vite: {
-    server: {
-      hmr: true
     }
   }
 })
