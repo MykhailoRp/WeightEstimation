@@ -2,7 +2,9 @@
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
-    '@nuxt/ui'
+    '@nuxt/ui',
+    '@pinia/colada-nuxt',
+    '@pinia/nuxt'
   ],
 
   devtools: {
@@ -10,6 +12,12 @@ export default defineNuxtConfig({
   },
 
   css: ['~/assets/css/main.css'],
+
+  runtimeConfig: {
+    public: {
+      apiBase: 'http://localhost:8000'
+    }
+  },
 
   routeRules: {
     '/': { prerender: true }
@@ -20,6 +28,12 @@ export default defineNuxtConfig({
   vite: {
     server: {
       hmr: true
+    },
+    optimizeDeps: {
+      include: [
+        'zod',
+        '@lucide/vue'
+      ]
     }
   },
 

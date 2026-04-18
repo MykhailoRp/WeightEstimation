@@ -1130,12 +1130,12 @@
             ],
             "parameters": [
                {
-                  "name": "token",
-                  "in": "query",
+                  "name": "api_token",
+                  "in": "path",
                   "required": true,
                   "schema": {
                      "type": "string",
-                     "title": "Token"
+                     "title": "Api Token"
                   }
                }
             ],

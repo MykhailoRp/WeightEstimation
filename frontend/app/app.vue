@@ -2,7 +2,10 @@
   <UApp>
     <UHeader>
       <template #left>
-        <NuxtLink to="/">
+        <NuxtLink
+          to="/"
+          :external="false"
+        >
           <AppLogo class="w-auto h-6 shrink-0" />
         </NuxtLink>
 
@@ -15,7 +18,7 @@
           to="sign-in"
           color="neutral"
           variant="outline"
-          external="false"
+          :external="false"
         />
 
         <UButton
@@ -23,7 +26,7 @@
           to="sign-up"
           color="neutral"
           variant="solid"
-          external="false"
+          :external="false"
         />
 
         <UColorModeButton />
@@ -36,24 +39,7 @@
 
     <USeparator icon="i-simple-icons-nuxtdotjs" />
 
-    <UFooter>
-      <template #left>
-        <p class="text-sm text-muted">
-          Built with Nuxt UI • © {{ new Date().getFullYear() }}
-        </p>
-      </template>
-
-      <template #right>
-        <UButton
-          to="https://github.com/nuxt-ui-templates/starter"
-          target="_blank"
-          icon="i-simple-icons-github"
-          aria-label="GitHub"
-          color="neutral"
-          variant="ghost"
-        />
-      </template>
-    </UFooter>
+    <UFooter />
   </UApp>
 </template>
 
