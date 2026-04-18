@@ -1,5 +1,8 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+
+  compatibilityDate: '2025-01-15',
+
   modules: [
     '@nuxt/eslint',
     '@nuxt/ui',
@@ -8,7 +11,7 @@ export default defineNuxtConfig({
   ],
 
   devtools: {
-    enabled: true
+    enabled: false
   },
 
   css: ['~/assets/css/main.css'],
@@ -22,8 +25,6 @@ export default defineNuxtConfig({
   routeRules: {
     '/': { prerender: true }
   },
-
-  compatibilityDate: '2025-01-15',
 
   vite: {
     server: {

@@ -4,6 +4,6 @@ export const createClientConfig: CreateClientConfig = (config) => {
   console.log(config)
   return {
     ...config,
-    baseUrl: 'https://localhost:8000'
+    baseUrl: 'http://localhost:8000'
   }
 }
