@@ -2,13 +2,25 @@
 export default defineNuxtConfig({
 
   compatibilityDate: '2025-01-15',
+  
+  components: [
+    {
+      path: '~/components',
+      pathPrefix: false
+    }
+  ],
 
   modules: [
+    'shadcn-nuxt',
     '@nuxt/eslint',
     '@nuxt/ui',
     '@pinia/colada-nuxt',
     '@pinia/nuxt'
   ],
+
+  routeRules: {
+    '/': { prerender: true }
+  },
 
   devtools: {
     enabled: false
@@ -24,10 +36,6 @@ export default defineNuxtConfig({
     }
   },
 
-  routeRules: {
-    '/': { prerender: true }
-  },
-
   vite: {
     server: {
       hmr: true
@@ -35,7 +43,11 @@ export default defineNuxtConfig({
     optimizeDeps: {
       include: [
         'zod',
-        '@lucide/vue'
+        '@lucide/vue',
+        'clsx',
+        'tailwind-merge',
+        'class-variance-authority',
+        '@vueuse/core',
       ]
     }
   },
@@ -47,5 +59,10 @@ export default defineNuxtConfig({
         braceStyle: '1tbs'
       }
     }
+  },
+
+  shadcn: {
+    prefix: '',
+    componentDir: './components/ui'
   }
 })
