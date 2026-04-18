@@ -7,7 +7,7 @@ from common.sql.scripts.user import get_user_with_role
 router = APIRouter()
 
 
-@router.post("/refresh")
+@router.post("/refresh", operation_id="Refresh Token")
 async def refresh(
     request: RefreshRequest,
     secrets_manager: SecretsManager,

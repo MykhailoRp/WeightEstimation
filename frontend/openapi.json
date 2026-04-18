@@ -458,12 +458,12 @@
                "auth"
             ],
             "summary": "Login",
-            "operationId": "login_api_internal_auth_login_post",
+            "operationId": "Login",
             "requestBody": {
                "content": {
                   "application/x-www-form-urlencoded": {
                      "schema": {
-                        "$ref": "#/components/schemas/Body_login_api_internal_auth_login_post"
+                        "$ref": "#/components/schemas/Body_Login"
                      }
                   }
                },
@@ -499,7 +499,7 @@
                "auth"
             ],
             "summary": "Logout",
-            "operationId": "logout_api_internal_auth_logout_post",
+            "operationId": "Logout",
             "requestBody": {
                "content": {
                   "application/json": {
@@ -545,7 +545,7 @@
                "auth"
             ],
             "summary": "Me",
-            "operationId": "me_api_internal_auth_me_get",
+            "operationId": "Get Me",
             "responses": {
                "200": {
                   "description": "Successful Response",
@@ -571,7 +571,7 @@
                "auth"
             ],
             "summary": "Refresh",
-            "operationId": "refresh_api_internal_auth_refresh_post",
+            "operationId": "Refresh Token",
             "requestBody": {
                "content": {
                   "application/json": {
@@ -1638,35 +1638,7 @@
             ],
             "title": "ApiTokenListResponse"
          },
-         "Body_Upload_File_To_Temporary_Folder": {
-            "properties": {
-               "file": {
-                  "type": "string",
-                  "contentMediaType": "application/octet-stream",
-                  "title": "File"
-               }
-            },
-            "type": "object",
-            "required": [
-               "file"
-            ],
-            "title": "Body_Upload File To Temporary Folder"
-         },
-         "Body_Upload_File_To_Temporary_Folder_Public": {
-            "properties": {
-               "file": {
-                  "type": "string",
-                  "contentMediaType": "application/octet-stream",
-                  "title": "File"
-               }
-            },
-            "type": "object",
-            "required": [
-               "file"
-            ],
-            "title": "Body_Upload File To Temporary Folder Public"
-         },
-         "Body_login_api_internal_auth_login_post": {
+         "Body_Login": {
             "properties": {
                "grant_type": {
                   "anyOf": [
@@ -1723,7 +1695,35 @@
                "username",
                "password"
             ],
-            "title": "Body_login_api_internal_auth_login_post"
+            "title": "Body_Login"
+         },
+         "Body_Upload_File_To_Temporary_Folder": {
+            "properties": {
+               "file": {
+                  "type": "string",
+                  "contentMediaType": "application/octet-stream",
+                  "title": "File"
+               }
+            },
+            "type": "object",
+            "required": [
+               "file"
+            ],
+            "title": "Body_Upload File To Temporary Folder"
+         },
+         "Body_Upload_File_To_Temporary_Folder_Public": {
+            "properties": {
+               "file": {
+                  "type": "string",
+                  "contentMediaType": "application/octet-stream",
+                  "title": "File"
+               }
+            },
+            "type": "object",
+            "required": [
+               "file"
+            ],
+            "title": "Body_Upload File To Temporary Folder Public"
          },
          "Currency": {
             "type": "string",

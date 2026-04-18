@@ -5,7 +5,7 @@ from api.dependencies import TokenData
 router = APIRouter()
 
 
-@router.get("/me")
+@router.get("/me", operation_id="Get Me")
 async def me(
     token_data: TokenData,
 ) -> TokenData:

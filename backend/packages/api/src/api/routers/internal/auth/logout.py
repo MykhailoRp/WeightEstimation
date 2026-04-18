@@ -8,7 +8,7 @@ from common.sql.tables.user.session import SessionTable
 router = APIRouter()
 
 
-@router.post("/logout")
+@router.post("/logout", operation_id="Logout")
 async def logout(
     request: LogoutRequest,
     token_data: TokenData,

@@ -12,7 +12,7 @@ from common.sql.tables.user.session import SessionTable
 router = APIRouter()
 
 
-@router.post("/login")
+@router.post("/login", operation_id="Login")
 async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session_maker: DBSession,

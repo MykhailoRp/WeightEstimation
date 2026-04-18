@@ -18,7 +18,9 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: 'http://localhost:8000'
+      apiBase: 'http://localhost:8000',
+      jwtCookie: 'jwt_token',
+      sessionCookie: 'session_token',
     }
   },
 
