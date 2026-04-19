@@ -1,15 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 
-  compatibilityDate: '2025-01-15',
-  
-  components: [
-    {
-      path: '~/components',
-      pathPrefix: false
-    }
-  ],
-
   modules: [
     'shadcn-nuxt',
     '@nuxt/eslint',
@@ -17,10 +8,14 @@ export default defineNuxtConfig({
     '@pinia/colada-nuxt',
     '@pinia/nuxt'
   ],
+  ssr: false,
 
-  routeRules: {
-    '/': { prerender: true }
-  },
+  components: [
+    {
+      path: '~/components',
+      pathPrefix: false
+    }
+  ],
 
   devtools: {
     enabled: false
@@ -33,8 +28,14 @@ export default defineNuxtConfig({
       apiBase: 'http://localhost:8000',
       jwtCookie: 'jwt_token',
       sessionCookie: 'session_token',
+      tokenDataCookie: 'token_data'
     }
   },
+
+  routeRules: {
+    '/': { prerender: true }
+  },
+  compatibilityDate: '2025-01-15',
 
   vite: {
     server: {
@@ -47,7 +48,7 @@ export default defineNuxtConfig({
         'clsx',
         'tailwind-merge',
         'class-variance-authority',
-        '@vueuse/core',
+        '@vueuse/core'
       ]
     }
   },

@@ -1346,6 +1346,51 @@
             }
          }
       },
+      "/api/internal/account/{account_id}/": {
+         "get": {
+            "summary": "Get User",
+            "operationId": "Get Account Details",
+            "security": [
+               {
+                  "OAuth2PasswordBearer": []
+               }
+            ],
+            "parameters": [
+               {
+                  "name": "account_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                     "type": "string",
+                     "format": "uuid",
+                     "title": "Account Id"
+                  }
+               }
+            ],
+            "responses": {
+               "200": {
+                  "description": "Successful Response",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/AccountDetailsResponse"
+                        }
+                     }
+                  }
+               },
+               "422": {
+                  "description": "Validation Error",
+                  "content": {
+                     "application/json": {
+                        "schema": {
+                           "$ref": "#/components/schemas/HTTPValidationError"
+                        }
+                     }
+                  }
+               }
+            }
+         }
+      },
       "/api/public/weight_classifications/": {
          "post": {
             "tags": [
@@ -1565,6 +1610,40 @@
    },
    "components": {
       "schemas": {
+         "AccountDetailsResponse": {
+            "properties": {
+               "user": {
+                  "$ref": "#/components/schemas/UserDetailsResponse"
+               },
+               "admin": {
+                  "anyOf": [
+                     {
+                        "$ref": "#/components/schemas/AdminDetailsResponse"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ]
+               },
+               "customer": {
+                  "anyOf": [
+                     {
+                        "$ref": "#/components/schemas/CustomerDetailsResponse"
+                     },
+                     {
+                        "type": "null"
+                     }
+                  ]
+               }
+            },
+            "type": "object",
+            "required": [
+               "user",
+               "admin",
+               "customer"
+            ],
+            "title": "AccountDetailsResponse"
+         },
          "AdminDetailsResponse": {
             "properties": {
                "id": {
@@ -1955,6 +2034,9 @@
                   "type": "string",
                   "title": "Access Token"
                },
+               "data": {
+                  "$ref": "#/components/schemas/TokenData"
+               },
                "session": {
                   "type": "string",
                   "title": "Session"
@@ -1963,6 +2045,7 @@
             "type": "object",
             "required": [
                "access_token",
+               "data",
                "session"
             ],
             "title": "LoginResponse"
@@ -2201,11 +2284,15 @@
                "access_token": {
                   "type": "string",
                   "title": "Access Token"
+               },
+               "data": {
+                  "$ref": "#/components/schemas/TokenData"
                }
             },
             "type": "object",
             "required": [
-               "access_token"
+               "access_token",
+               "data"
             ],
             "title": "RefreshResponse"
          },

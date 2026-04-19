@@ -5,7 +5,7 @@ export const createClientConfig: CreateClientConfig = (config) => {
     ...config,
     auth: () => {
       const token = useJWTCookie().value
-      return token ? `Bearer ${token}` : undefined
+      return token ? `${token}` : undefined
     },
     baseUrl: 'http://localhost:8000'
   }

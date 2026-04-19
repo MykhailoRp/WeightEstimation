@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
 
+from api.auth.models import TokenData
 from api.dependencies import DBSession, SecretsManager
 from api.models.auth import LoginResponse
 from common.sql.scripts.user import get_user_with_role
@@ -40,4 +41,4 @@ async def login(
 
     response.headers["authorization"] = f"Bearer {new_token}"
 
-    return LoginResponse(access_token=new_token, session=new_session.token)
+    return LoginResponse(access_token=new_token, session=new_session.token, data=TokenData.new(user))

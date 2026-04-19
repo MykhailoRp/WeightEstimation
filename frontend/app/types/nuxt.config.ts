@@ -1,13 +1,14 @@
 declare module 'nuxt/schema' {
-    interface RuntimeConfig {
-      apiSecret: string
-    }
-  
-    interface PublicRuntimeConfig {
-      apiBase: string
-      jwtCookie: string
-      sessionCookie: string
-    }
+  interface RuntimeConfig {
+    apiSecret: string
   }
-  
-  export {}
+
+  interface PublicRuntimeConfig {
+    apiBase: string
+    jwtCookie: string
+    sessionCookie: string
+    tokenDataCookie: string
+  }
+}
+
+export {}

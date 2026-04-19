@@ -2,12 +2,14 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from api.auth.models import TokenData
 from common.types import UserId
 
 
 class _TokenData(BaseModel):
     token_type: Literal["bearer"] = "bearer"
     access_token: str
+    data: TokenData
 
 
 class LoginResponse(_TokenData):

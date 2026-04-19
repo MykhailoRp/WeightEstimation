@@ -20,6 +20,8 @@ import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui'
 import { DoorOpen } from '@lucide/vue'
 import { loginMutation } from '~/client/@pinia/colada.gen'
 
+const router = useRouter()
+
 const fields: AuthFormField[] = [
   {
     name: 'username',
@@ -44,15 +46,16 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
 
-const {mutate: login, isLoading} = useMutation({
+const { mutate: login, isLoading } = useMutation({
   ...loginMutation(),
   onSuccess: (data) => {
-    SetAuth(data.access_token, data.session, data.token_type)
+    SetAuth(data.access_token, data.session, data.data)
+    router.push('account')
   }
 })
 
 function onSubmit(payload: FormSubmitEvent<Schema>) {
   console.log('Submitted', payload)
-  login({body: payload.data})
+  login({ body: payload.data })
 }
 </script>

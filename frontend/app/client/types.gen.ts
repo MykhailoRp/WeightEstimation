@@ -5,6 +5,15 @@ export type ClientOptions = {
 };
 
 /**
+ * AccountDetailsResponse
+ */
+export type AccountDetailsResponse = {
+    user: UserDetailsResponse;
+    admin: AdminDetailsResponse | null;
+    customer: CustomerDetailsResponse | null;
+};
+
+/**
  * AdminDetailsResponse
  */
 export type AdminDetailsResponse = {
@@ -258,6 +267,7 @@ export type LoginResponse = {
      * Access Token
      */
     access_token: string;
+    data: TokenData;
     /**
      * Session
      */
@@ -440,6 +450,7 @@ export type RefreshResponse = {
      * Access Token
      */
     access_token: string;
+    data: TokenData;
 };
 
 /**
@@ -1412,6 +1423,36 @@ export type GetAdminDetailsResponses = {
 };
 
 export type GetAdminDetailsResponse = GetAdminDetailsResponses[keyof GetAdminDetailsResponses];
+
+export type GetAccountDetailsData = {
+    body?: never;
+    path: {
+        /**
+         * Account Id
+         */
+        account_id: string;
+    };
+    query?: never;
+    url: '/api/internal/account/{account_id}/';
+};
+
+export type GetAccountDetailsErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type GetAccountDetailsError = GetAccountDetailsErrors[keyof GetAccountDetailsErrors];
+
+export type GetAccountDetailsResponses = {
+    /**
+     * Successful Response
+     */
+    200: AccountDetailsResponse;
+};
+
+export type GetAccountDetailsResponse = GetAccountDetailsResponses[keyof GetAccountDetailsResponses];
 
 export type GetWeightClassificationListPublicData = {
     body?: never;
