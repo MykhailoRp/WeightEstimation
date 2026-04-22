@@ -1,12 +1,16 @@
 <template>
   <UCard>
     <template #header>
-      <div class="flex gap-3" v-if="data?.user">
+      <div
+        v-if="data?.user"
+        class="flex gap-3"
+      >
         <p class="font-bold">
           {{ data.user.email }}
         </p>
         <UBadge
           v-for="role in data?.user.role"
+          :key="role"
           size="sm"
           variant="soft"
           :color="userRoleBadge[role].color"

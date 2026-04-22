@@ -14,6 +14,7 @@
 
       <template #right>
         <UButton
+          v-if="!session"
           label="Sign In"
           to="sign-in"
           color="neutral"
@@ -22,11 +23,21 @@
         />
 
         <UButton
+          v-if="!session"
           label="Sign Up"
           to="sign-up"
           color="neutral"
           variant="solid"
           :external="false"
+        />
+
+        <UButton
+          v-if="session"
+          label="Sign Out"
+          color="error"
+          variant="outline"
+          :loading="isLoggingout"
+          @click="logoutClick"
         />
 
         <UColorModeButton />
@@ -44,6 +55,8 @@
 </template>
 
 <script setup>
+import { logoutMutation } from './client/@pinia/colada.gen'
+
 useHead({
   meta: [
     { name: 'viewport', content: 'width=device-width, initial-scale=1' }
@@ -67,4 +80,18 @@ useSeoMeta({
   ogImage: 'https://ui.nuxt.com/assets/templates/nuxt/starter-light.png',
   twitterCard: 'summary_large_image'
 })
+
+const session = useSessionCookie()
+
+const { mutate: logout, isLoading: isLoggingout } = useMutation({
+  ...logoutMutation(),
+  onSuccess: () => { ClearAuth() },
+  onError: () => { ClearAuth() }
+})
+
+function logoutClick() {
+  if (session.value) {
+    logout({ body: { session: session.value } })
+  }
+}
 </script>

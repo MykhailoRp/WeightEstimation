@@ -10,6 +10,14 @@ export function SetAuth(jwt_token: string, session_token: string, token_data: To
   useTokenDataCookie().value = token_data
 }
 
+export async function ClearAuth() {
+  useJWTCookie().value = null
+  useSessionCookie().value = null
+  useTokenDataCookie().value = null
+  useQueryCache().invalidateQueries({ key: ['me'] })
+  await navigateTo('/')
+}
+
 export const useToken = () => {
   const sessionCookie = useSessionCookie()
   const tokenDataCookie = useTokenDataCookie()
