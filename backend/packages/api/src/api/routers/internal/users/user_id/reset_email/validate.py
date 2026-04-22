@@ -30,7 +30,7 @@ async def validate_email(
         if otp is None:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Expired or invalid code")
 
-        await session.execute(update(UserTable).where(UserTable.id == otp.user_id).values(email=otp.data.new_email, email_validated=True))
+        await session.execute(update(UserTable).where(UserTable.id == otp.user_id).values(email=otp.data.new_email, email_verified=True))
 
         await session.commit()
 
