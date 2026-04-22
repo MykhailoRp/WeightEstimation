@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, HTTPException, status
 
 from api.dependencies import DBSession
+from api.exceptions import ApiException
 from api.models.otp import OTPResponse
 from api.models.user.reset_password import PasswordResetRequest
 from common.kafka.messages.email import EmailSend
@@ -15,7 +16,7 @@ from common.sql.tables.user.otp import OTPTable, insert_otp
 router = APIRouter()
 
 
-@router.post("/", status_code=200, operation_id="Request Password Reset")
+@router.post("/", status_code=200, responses={404: {"model": ApiException}}, operation_id="Request Password Reset")
 async def reset_password(
     request: Annotated[PasswordResetRequest, Body()],
     session_maker: DBSession,
