@@ -8,5 +8,9 @@
 </template>
 
 <script setup lang="ts">
+definePageMeta({
+  middleware: ['has-token']
+})
+
 const { data: token } = useToken()
 </script>

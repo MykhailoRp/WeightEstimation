@@ -20,7 +20,9 @@ import type { FormSubmitEvent, AuthFormField } from '@nuxt/ui'
 import { DoorOpen } from '@lucide/vue'
 import { loginMutation } from '~/client/@pinia/colada.gen'
 
-const router = useRouter()
+definePageMeta({
+  middleware: ['no-token']
+})
 
 const fields: AuthFormField[] = [
   {
@@ -50,7 +52,7 @@ const { mutate: login, isLoading } = useMutation({
   ...loginMutation(),
   onSuccess: (data) => {
     SetAuth(data.access_token, data.session, data.data)
-    router.push('account')
+    navigateTo('/account')
   }
 })
 

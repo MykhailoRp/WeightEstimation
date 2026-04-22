@@ -14,40 +14,48 @@ export async function ClearAuth() {
   useJWTCookie().value = null
   useSessionCookie().value = null
   useTokenDataCookie().value = null
-  useQueryCache().invalidateQueries({ key: ['me'] })
-  await navigateTo('/')
 }
 
 export const useToken = () => {
   const sessionCookie = useSessionCookie()
+  const JWTCookie = useJWTCookie()
   const tokenDataCookie = useTokenDataCookie()
 
   return useQuery({
     key: ['me'],
     staleTime: 60_000,
+    enabled: () => sessionCookie.value !== null && JWTCookie.value !== null,
     query: async () => {
       const meResult = await getMe()
 
+      if (meResult.data) {
+        tokenDataCookie.value = meResult.data
+        return meResult.data
+      }
+
       if (meResult.response.status !== 401) {
-        tokenDataCookie.value = meResult.data!
-        return meResult.data!
+        await ClearAuth()
+        await navigateTo('/sign-in')
+        return undefined
       }
 
       const session = sessionCookie.value
       const userId = tokenDataCookie.value?.id
 
       if (!userId || !session) {
+        await ClearAuth()
         await navigateTo('/sign-in')
-        throw new Error('Unauthenticated')
+        return undefined
       }
 
       const refreshResult = await refreshToken({
         body: { user_id: userId, session }
       })
 
-      if (refreshResult.response.status !== 200 || !refreshResult.data) {
+      if (!refreshResult.data) {
+        await ClearAuth()
         await navigateTo('/sign-in')
-        throw new Error('Unauthenticated')
+        return undefined
       }
 
       SetAuth(refreshResult.data.access_token, session, refreshResult.data.data)
@@ -59,7 +67,7 @@ export const useToken = () => {
         i++
       };
       tokenDataCookie.value = retryResult.data!
-      return retryResult.data!
+      return retryResult.data
     }
   })
 }

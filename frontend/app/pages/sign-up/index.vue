@@ -23,6 +23,10 @@ import { newUserMutation } from '~/client/@pinia/colada.gen'
 const toast = useToast()
 const router = useRouter()
 
+definePageMeta({
+  middleware: ['no-token']
+})
+
 const fields: AuthFormField[] = [
   {
     name: 'email',

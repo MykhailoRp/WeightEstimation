@@ -85,8 +85,14 @@ const session = useSessionCookie()
 
 const { mutate: logout, isLoading: isLoggingout } = useMutation({
   ...logoutMutation(),
-  onSuccess: () => { ClearAuth() },
-  onError: () => { ClearAuth() }
+  onSuccess: () => {
+    ClearAuth()
+    navigateTo('/')
+  },
+  onError: () => {
+    ClearAuth()
+    navigateTo('/')
+  }
 })
 
 function logoutClick() {

@@ -24,6 +24,10 @@ const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 
+definePageMeta({
+  middleware: ['no-token']
+})
+
 const user_id = route.query.user_id as string
 
 const fields: AuthFormField[] = [
