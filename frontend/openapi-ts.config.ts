@@ -4,7 +4,7 @@ export default defineConfig({
   input: 'openapi.json',
   output: {
     path: 'app/client',
-    postProcess: ['prettier', 'eslint']
+    postProcess: ['prettier']
   },
   plugins: [
     {

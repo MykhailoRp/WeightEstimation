@@ -10,6 +10,7 @@
         :loading="isLoading"
         @submit="onSubmit"
       />
+      <ForgotPasswordDialog />
     </UPageCard>
   </div>
 </template>
