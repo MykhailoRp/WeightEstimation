@@ -147,26 +147,11 @@
         </Item>
       </template>
 
-      <template v-if="data?.admin">
-        <Item variant="muted">
-          <ItemHeader>
-            Promoted By
-          </ItemHeader>
-          <ItemContent>
-            <ItemTitle>
-              mail@mail.com
-            </ItemTitle>
-          </ItemContent>
-          <ItemActions>
-            <UButton
-              size="sm"
-              label="Details"
-              :trailing-icon="ArrowRight"
-              variant="outline"
-              color="primary"
-            />
-          </ItemActions>
-        </Item>
+      <template v-if="data?.admin?.promoted_by_id">
+        <UserItem
+          :user-id="data.admin.promoted_by_id"
+          header="Promoted By"
+        />
       </template>
     </div>
 
