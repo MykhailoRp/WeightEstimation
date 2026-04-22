@@ -48,7 +48,8 @@ export default defineNuxtConfig({
         'clsx',
         'tailwind-merge',
         'class-variance-authority',
-        '@vueuse/core'
+        '@vueuse/core',
+        'lucide-vue-next',
       ]
     }
   },
