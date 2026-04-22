@@ -49,7 +49,7 @@ export default defineNuxtConfig({
         'tailwind-merge',
         'class-variance-authority',
         '@vueuse/core',
-        'lucide-vue-next',
+        'lucide-vue-next'
       ]
     }
   },
