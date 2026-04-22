@@ -6,12 +6,15 @@
           <h2 class="text-lg font-semibold">
             Weight Verifications
           </h2>
-          <span
-            v-if="data"
-            class="text-sm text-muted"
-          >
-            {{ data.total_count }} total
-          </span>
+          <div class="flex items-center gap-3">
+            <span
+              v-if="data"
+              class="text-sm text-muted"
+            >
+              {{ data.total_count }} total
+            </span>
+            <NewVerificationDialog />
+          </div>
         </div>
       </template>
 
@@ -19,6 +22,8 @@
         :data="data?.items ?? []"
         :columns="columns"
         :loading="isLoading"
+        class="cursor-pointer"
+        @select="(_e, row) => navigateTo(`/verifications/${row.original.id}`)"
       />
 
       <template #footer>
