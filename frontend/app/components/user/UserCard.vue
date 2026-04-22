@@ -1,15 +1,16 @@
 <template>
   <UCard>
     <template #header>
-      <div class="flex gap-3">
+      <div class="flex gap-3" v-if="data?.user">
         <p class="font-bold">
-          mail@mail.com
+          {{ data.user.email }}
         </p>
         <UBadge
+          v-for="role in data?.user.role"
           size="sm"
           variant="soft"
-          color="info"
-          label="CUSTOMER"
+          :color="userRoleBadge[role].color"
+          :label="role"
         />
       </div>
     </template>
@@ -275,6 +276,7 @@ import * as z from 'zod'
 import { CheckCircle, Edit, Plus, ArrowRight, UserKey, CircleX, UserX2 } from '@lucide/vue'
 import { getAccountDetailsQuery, requestEmailResetMutation, validateEmailResetMutation } from '~/client/@pinia/colada.gen'
 import type { FormSubmitEvent } from '@nuxt/ui'
+import { userRoleBadge } from '~/const/userRole'
 
 const { data: token, isLoading: _isLoadingToken } = useToken()
 const toast = useToast()
