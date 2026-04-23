@@ -18,7 +18,7 @@ async def new_admin(
     token_data: TokenData,
 ) -> AdminDetailsResponse:
 
-    if not token_data.is_(UserRole.ADMIN):
+    if not token_data.is_(UserRole.ADMIN) or token_data.id == request.user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You can not create admins")
 
     admin = Admin(id=request.user_id, promoted_by_id=token_data.id)

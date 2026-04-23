@@ -19,7 +19,7 @@ async def delete_admin(
     token_data: TokenData,
 ) -> DemoteAdminResponse:
 
-    if not token_data.is_(UserRole.ADMIN):
+    if not token_data.is_(UserRole.ADMIN) or token_data.id == admin_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You do not have access to this admin")
 
     async with session_maker() as session:
@@ -27,5 +27,6 @@ async def delete_admin(
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You cant demote this admin")
 
         await demote_admin_script(session, id=admin_id)
+        await session.commit()
 
     return DemoteAdminResponse()
