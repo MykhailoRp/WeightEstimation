@@ -10,6 +10,8 @@
         </NuxtLink>
       </template>
 
+      <AppSidebar />
+
       <template #right>
         <UButton
           v-if="!session"
@@ -42,7 +44,10 @@
       </template>
 
       <template #body>
-        <AppSidebar />
+        <AppSidebar
+          orientation="vertical"
+          class="-mx-2.5"
+        />
       </template>
     </UHeader>
 

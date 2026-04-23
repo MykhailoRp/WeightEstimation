@@ -1,6 +1,6 @@
 <template>
   <UNavigationMenu
-    orientation="vertical"
+    :orientation="orientation"
     :items="sections"
     variant="pill"
     :ui="{ link: 'text-sm' }"
@@ -10,6 +10,12 @@
 <script setup lang="ts">
 import { User, ShieldCheck, KeyRound, FileText, Users } from '@lucide/vue'
 import type { NavigationMenuItem } from '@nuxt/ui'
+
+withDefaults(defineProps<{
+  orientation?: 'horizontal' | 'vertical'
+}>(), {
+  orientation: 'horizontal'
+})
 
 const { data: token } = useToken()
 
