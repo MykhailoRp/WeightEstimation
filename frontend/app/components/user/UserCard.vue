@@ -234,6 +234,8 @@
                 size="md"
                 :trailing-icon="UserX2"
                 variant="ghost"
+                :loading="isDemotingAdmin"
+                @click="demoteAdmin({ path: { admin_id: data.admin.id } })"
               />
             </ItemActions>
           </Item>
@@ -251,6 +253,8 @@
                 size="md"
                 :trailing-icon="UserKey"
                 variant="ghost"
+                :loading="isPromotingToAdmin"
+                @click="promoteToAdmin({ body: { user_id: props.userId } })"
               />
             </ItemActions>
           </Item>
@@ -263,7 +267,7 @@
 <script setup lang="ts">
 import * as z from 'zod'
 import { CheckCircle, Edit, Plus, ArrowRight, UserKey, CircleX, UserX2 } from '@lucide/vue'
-import { getAccountDetailsQuery, requestEmailResetMutation, validateEmailResetMutation } from '~/client/@pinia/colada.gen'
+import { createNewAdminMutation, demoteAdminMutation, getAccountDetailsQuery, requestEmailResetMutation, validateEmailResetMutation } from '~/client/@pinia/colada.gen'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import { userRoleBadge } from '~/const/userRole'
 
@@ -335,4 +339,30 @@ type ValidateEmailSchema = z.output<typeof validateEmailSchema>
 function validateEmail(payload: FormSubmitEvent<ValidateEmailSchema>) {
   validateEmailReset({ body: payload.data, path: { user_id: props.userId } })
 }
+
+const { mutate: promoteToAdmin, isLoading: isPromotingToAdmin } = useMutation({
+  ...createNewAdminMutation(),
+  onSuccess: () => {
+    refresh()
+  },
+  onError: (data) => {
+    toast.add({
+      color: 'error',
+      description: data.detail?.map(item => item.msg).join(', ') || 'Request error'
+    })
+  }
+})
+
+const { mutate: demoteAdmin, isLoading: isDemotingAdmin } = useMutation({
+  ...demoteAdminMutation(),
+  onSuccess: () => {
+    refresh()
+  },
+  onError: (data) => {
+    toast.add({
+      color: 'error',
+      description: data.detail?.map(item => item.msg).join(', ') || 'Request error'
+    })
+  }
+})
 </script>
