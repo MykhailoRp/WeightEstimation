@@ -16,7 +16,7 @@
         <UButton
           v-if="!session"
           label="Sign In"
-          to="sign-in"
+          to="/sign-in"
           color="neutral"
           variant="outline"
           :external="false"
@@ -25,7 +25,7 @@
         <UButton
           v-if="!session"
           label="Sign Up"
-          to="sign-up"
+          to="/sign-up"
           color="neutral"
           variant="solid"
           :external="false"
