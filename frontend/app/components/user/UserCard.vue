@@ -178,7 +178,7 @@
             </Item>
           </NuxtLink>
 
-          <NuxtLink to="account">
+          <NuxtLink :to="`/invoices?user_id=${data.customer.id}`">
             <Item
               variant="outline"
               as="a"
