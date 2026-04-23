@@ -76,6 +76,8 @@ definePageMeta({
   middleware: ['has-token']
 })
 
+const _t = useToken()
+
 const UBadge = resolveComponent('UBadge')
 
 const pageSize = 10
@@ -94,7 +96,7 @@ watch([debouncedEmailLike, selectedRoles], () => {
 const { data, isLoading } = useQuery(() => ({
   ...getUsersListQuery({
     query: {
-      page: page.value,
+      page: page.value - 1,
       size: pageSize,
       email_like: debouncedEmailLike.value || null,
       roles: selectedRoles.value.length ? selectedRoles.value : null

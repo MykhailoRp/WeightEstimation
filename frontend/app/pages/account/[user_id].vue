@@ -8,6 +8,7 @@
 definePageMeta({
   middleware: ['has-token']
 })
+const _t = useToken()
 
 const route = useRoute()
 const userId = computed(() => route.params.user_id as string)

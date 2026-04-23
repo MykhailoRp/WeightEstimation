@@ -158,7 +158,7 @@
     <template #footer>
       <div class="grid grid-cols-3 gap-3">
         <template v-if="data?.customer">
-          <NuxtLink to="account">
+          <NuxtLink :to="`/verifications?user_id=${data.customer.id}`">
             <Item
               variant="outline"
               as="a"

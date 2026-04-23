@@ -14,24 +14,11 @@
               {{ data.total_count }} total
             </span>
             <NewInvoiceDialog
-              :default-customer-id="userId"
               @created="refetch"
             />
           </div>
         </div>
       </template>
-
-      <UFormField
-        label="User id"
-        class="sm:w-96"
-      >
-        <UInput
-          v-model="userId"
-          placeholder="Filter by user id"
-          :icon="Search"
-          class="w-full"
-        />
-      </UFormField>
 
       <UTable
         :data="data?.items ?? []"
@@ -56,7 +43,7 @@
 <script setup lang="ts">
 import { h, resolveComponent } from 'vue'
 import { refDebounced } from '@vueuse/core'
-import { Search, ExternalLink } from '@lucide/vue'
+import { ExternalLink } from '@lucide/vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { Invoice } from '~/client'
 import { getInvoicesListQuery } from '~/client/@pinia/colada.gen'
@@ -65,6 +52,8 @@ import { badgeInvoiceStatusColor } from '~/const/invoiceBadge'
 definePageMeta({
   middleware: ['has-token']
 })
+
+const _t = useToken()
 
 const UBadge = resolveComponent('UBadge')
 const UButton = resolveComponent('UButton')

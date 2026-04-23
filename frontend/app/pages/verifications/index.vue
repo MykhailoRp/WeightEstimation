@@ -41,6 +41,7 @@
 
 <script setup lang="ts">
 import { h, resolveComponent } from 'vue'
+import { refDebounced } from '@vueuse/core'
 import type { TableColumn } from '@nuxt/ui'
 import type { WeightClassificationItem } from '~/client'
 import { getWeightClassificationListQuery } from '~/client/@pinia/colada.gen'
@@ -50,15 +51,29 @@ definePageMeta({
   middleware: ['has-token']
 })
 
+const _t = useToken()
+
 const UBadge = resolveComponent('UBadge')
+
+const route = useRoute()
+const router = useRouter()
 
 const pageSize = 10
 const page = ref(1)
+const userId = ref((route.query.user_id as string | undefined) ?? '')
+
+const debouncedUserId = refDebounced(userId, 300)
+
+watch(debouncedUserId, (value) => {
+  page.value = 1
+  router.replace({ query: { ...route.query, user_id: value || undefined } })
+})
 
 const { data, isLoading } = useQuery(() => ({
   ...getWeightClassificationListQuery({
-    query: { page: page.value, size: pageSize }
-  })
+    query: { page: page.value - 1, size: pageSize, customer_ids: debouncedUserId.value ? [debouncedUserId.value] : null }
+  }),
+  staleTime: 0
 }))
 
 const columns: TableColumn<WeightClassificationItem>[] = [

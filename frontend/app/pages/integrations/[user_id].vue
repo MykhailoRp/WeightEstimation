@@ -33,7 +33,10 @@
         </div>
       </template>
 
-      <ItemGroup v-if="data?.items.length">
+      <ItemGroup
+        v-if="data?.items.length"
+        class="gap-3"
+      >
         <Item
           v-for="item in data.items"
           :key="item.token"
@@ -74,7 +77,6 @@
       >
         No API tokens yet. Create one to get started.
       </div>
-
     </UCard>
   </UContainer>
 </template>
@@ -92,6 +94,8 @@ definePageMeta({
   middleware: ['has-token']
 })
 
+const _t = useToken()
+
 const route = useRoute()
 const toast = useToast()
 const { copy } = useClipboard()
@@ -105,11 +109,11 @@ const MAX_TOKENS = 5
 const { data, isLoading, refetch } = useQuery(() => ({
   ...getApiTokenListQuery({
     query: {
-      page: 1,
       size: MAX_TOKENS,
       customer_ids: [userId.value]
     }
-  })
+  }),
+  staleTime: 0
 }))
 
 function reportError(err: unknown) {

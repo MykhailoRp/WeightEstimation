@@ -19,18 +19,6 @@
         @submit="submit"
       >
         <UFormField
-          label="Customer id"
-          name="customer_id"
-          class="w-full"
-        >
-          <UInput
-            v-model="state.customer_id"
-            class="w-full"
-            placeholder="Customer UUID"
-          />
-        </UFormField>
-
-        <UFormField
           label="Amount"
           name="amount"
           class="w-full"
@@ -69,9 +57,7 @@ import { Plus } from '@lucide/vue'
 import type { FormSubmitEvent } from '@nuxt/ui'
 import { createNewInvoiceMutation } from '~/client/@pinia/colada.gen'
 
-const props = defineProps<{
-  defaultCustomerId?: string
-}>()
+const { data: token, isLoading: _isLoadingToken } = useToken()
 
 const emit = defineEmits<{
   created: []
@@ -82,22 +68,15 @@ const toast = useToast()
 const isDialogOpen = ref(false)
 
 const schema = z.object({
-  customer_id: z.string().min(1, 'Customer id is required'),
   amount: z.number().positive('Amount must be greater than 0')
 })
 
 type Schema = z.output<typeof schema>
 
 const state = reactive<{
-  customer_id: string
   amount: number | undefined
 }>({
-  customer_id: props.defaultCustomerId ?? '',
   amount: undefined
-})
-
-watch(() => props.defaultCustomerId, (value) => {
-  state.customer_id = value ?? ''
 })
 
 const { mutateAsync: createInvoice, isLoading: isSubmitting } = useMutation({
@@ -116,16 +95,18 @@ function reportError(err: unknown) {
 
 async function submit(payload: FormSubmitEvent<Schema>) {
   try {
-    await createInvoice({
-      body: {
-        customer_id: payload.data.customer_id,
-        amount: payload.data.amount
-      }
-    })
-    toast.add({ color: 'success', description: 'Invoice created' })
-    emit('created')
-    isDialogOpen.value = false
-    state.amount = undefined
+    if (token.value) {
+      await createInvoice({
+        body: {
+          customer_id: token.value?.id,
+          amount: payload.data.amount
+        }
+      })
+      toast.add({ color: 'success', description: 'Invoice created' })
+      emit('created')
+      isDialogOpen.value = false
+      state.amount = undefined
+    }
   } catch (err) {
     reportError(err)
   }
