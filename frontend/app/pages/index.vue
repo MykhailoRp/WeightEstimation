@@ -1,19 +1,16 @@
 <template>
   <div>
     <UPageHero
-      title="VizWeight"
-      description="A production-ready starter template powered by Nuxt UI. Build beautiful, accessible, and performant applications in minutes, not hours."
+      title="Weigh vehicles with a single image."
+      description="VizWeight is a SaaS platform that identifies vehicle weight from visual characteristics — specializing in tire-based analysis. Integrate accurate, instant weight estimation into your stack with a single API call."
       :links="[{
         label: 'Get started',
-        to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-        target: '_blank',
+        to: '/sign-up',
         trailingIcon: 'i-lucide-arrow-right',
         size: 'xl'
       }, {
-        label: 'Use this template',
-        to: 'https://github.com/nuxt-ui-templates/starter',
-        target: '_blank',
-        icon: 'i-simple-icons-github',
+        label: 'Sign in',
+        to: '/sign-in',
         size: 'xl',
         color: 'neutral',
         variant: 'subtle'
@@ -22,51 +19,48 @@
 
     <UPageSection
       id="features"
-      title="Everything you need to build modern Nuxt apps"
-      description="Start with a solid foundation. This template includes all the essentials for building production-ready applications with Nuxt UI's powerful component system."
+      title="Computer vision built for weight estimation"
+      description="Drop VizWeight into your existing systems — from tollway enforcement to logistics yards — and turn a camera feed into structured weight data."
       :features="[{
-        icon: 'i-lucide-rocket',
-        title: 'Production-ready from day one',
-        description: 'Pre-configured with TypeScript, ESLint, Tailwind CSS, and all the best practices. Focus on building features, not setting up tooling.'
+        icon: 'i-lucide-cctv',
+        title: 'Camera-ready ingestion',
+        description: 'Accepts frames from CCTV, ANPR, and inspection cameras. Works with single-shot images or live streams.'
       }, {
-        icon: 'i-lucide-palette',
-        title: 'Beautiful by default',
-        description: 'Leveraging Nuxt UI\'s design system with automatic dark mode, consistent spacing, and polished components that look great out of the box.'
-      }, {
-        icon: 'i-lucide-zap',
-        title: 'Lightning fast',
-        description: 'Optimized for performance with SSR/SSG support, automatic code splitting, and edge-ready deployment. Your users will love the speed.'
-      }, {
-        icon: 'i-lucide-blocks',
-        title: '100+ components included',
-        description: 'Access Nuxt UI\'s comprehensive component library. From forms to navigation, everything is accessible, responsive, and customizable.'
+        icon: 'i-lucide-scan-eye',
+        title: 'Tire-based identification',
+        description: 'Our models read tire geometry, tread deflection, sidewall profile, and axle configuration to infer vehicle weight.'
       }, {
         icon: 'i-lucide-code-2',
-        title: 'Developer experience first',
-        description: 'Auto-imports, hot module replacement, and TypeScript support. Write less boilerplate and ship more features.'
+        title: 'Simple REST API',
+        description: 'Authenticate with an API key, POST an image, get a weight estimate back. Predictable schemas, typed SDKs, zero guesswork.'
+      }, {
+        icon: 'i-lucide-gauge',
+        title: 'Low-latency inference',
+        description: 'Sub-second responses on standard payloads, so VizWeight keeps up with real-time checkpoints and enforcement flows.'
       }, {
         icon: 'i-lucide-shield-check',
-        title: 'Built for scale',
-        description: 'Enterprise-ready architecture with proper error handling, SEO optimization, and security best practices built-in.'
+        title: 'Privacy-first processing',
+        description: 'Imagery is processed in isolated tenants, never used for training, and purged on a schedule you control.'
+      }, {
+        icon: 'i-lucide-bar-chart-3',
+        title: 'Usage & billing built in',
+        description: 'Track requests, monitor accuracy, manage API keys, and download invoices straight from your dashboard.'
       }]"
     />
 
     <UPageSection>
       <UPageCTA
-        title="Ready to build your next Nuxt app?"
-        description="Join thousands of developers building with Nuxt and Nuxt UI. Get this template and start shipping today."
+        title="Ready to turn cameras into scales?"
+        description="Create an account, grab an API key, and start weighing vehicles from imagery in minutes."
         variant="subtle"
         :links="[{
-          label: 'Start building',
-          to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-          target: '_blank',
+          label: 'Create account',
+          to: '/sign-up',
           trailingIcon: 'i-lucide-arrow-right',
           color: 'neutral'
         }, {
-          label: 'View on GitHub',
-          to: 'https://github.com/nuxt-ui-templates/starter',
-          target: '_blank',
-          icon: 'i-simple-icons-github',
+          label: 'Sign in',
+          to: '/sign-in',
           color: 'neutral',
           variant: 'outline'
         }]"
