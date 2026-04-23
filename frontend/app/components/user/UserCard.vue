@@ -198,7 +198,7 @@
             </Item>
           </NuxtLink>
 
-          <NuxtLink to="account">
+          <NuxtLink :to="`/integrations/${data.customer.id}`">
             <Item
               variant="outline"
               as="a"
