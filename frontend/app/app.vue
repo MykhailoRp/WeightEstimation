@@ -8,8 +8,6 @@
         >
           <AppLogo class="w-auto h-6 shrink-0" />
         </NuxtLink>
-
-        <TemplateMenu />
       </template>
 
       <template #right>
@@ -42,19 +40,16 @@
 
         <UColorModeButton />
       </template>
+
+      <template #body>
+        <AppSidebar />
+      </template>
     </UHeader>
 
     <UMain>
-      <div
-        v-if="session"
-        class="flex min-h-[calc(100vh-var(--ui-header-height,64px))]"
-      >
-        <AppSidebar />
-        <div class="flex-1 min-w-0">
-          <NuxtPage />
-        </div>
-      </div>
-      <NuxtPage v-else />
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
     </UMain>
 
     <USeparator icon="i-simple-icons-nuxtdotjs" />

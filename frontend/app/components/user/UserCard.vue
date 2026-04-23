@@ -18,7 +18,7 @@
         />
       </div>
     </template>
-    <div class="grid grid-cols-3 gap-3">
+    <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3">
       <template v-if="data?.user">
         <Item variant="muted">
           <ItemHeader>
@@ -278,7 +278,7 @@ const props = defineProps<{
   userId: string
 }>()
 
-const { data, refresh, error: _error, isLoading: _isLoading } = useQuery({
+const { data, refresh, refetch, error: _error, isLoading: _isLoading } = useQuery({
   ...getAccountDetailsQuery({ path: { account_id: props.userId } })
 })
 
@@ -343,7 +343,7 @@ function validateEmail(payload: FormSubmitEvent<ValidateEmailSchema>) {
 const { mutate: promoteToAdmin, isLoading: isPromotingToAdmin } = useMutation({
   ...createNewAdminMutation(),
   onSuccess: () => {
-    refresh()
+    refetch()
   },
   onError: (data) => {
     toast.add({
@@ -356,7 +356,7 @@ const { mutate: promoteToAdmin, isLoading: isPromotingToAdmin } = useMutation({
 const { mutate: demoteAdmin, isLoading: isDemotingAdmin } = useMutation({
   ...demoteAdminMutation(),
   onSuccess: () => {
-    refresh()
+    refetch()
   },
   onError: (data) => {
     toast.add({
